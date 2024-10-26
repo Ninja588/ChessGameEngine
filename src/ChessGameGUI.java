@@ -129,7 +129,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
     public static String tempS;
     public static boolean tempIsWhite;
     public static boolean player = true;
-    
+
     private void checkGameConditions() {
         if(chessBoard.isCheckmate(true)) {
             SoundManager.playSound("game-end.wav");

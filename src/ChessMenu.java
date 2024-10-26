@@ -77,11 +77,13 @@ public class ChessMenu {
         //settingsPanel.setBackground(new Color(70, 130, 180));
         settingsPanel.setLayout(new BoxLayout(settingsPanel, BoxLayout.Y_AXIS));
 
+        settingsPanel.add(Box.createVerticalGlue());
+
         JLabel label = new JLabel("Wybierz tryb:", SwingConstants.CENTER);
         label.setFont(new Font("Arial", Font.BOLD, 20));
         label.setForeground(Color.WHITE);
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        settingsPanel.add(label);
+        settingsPanel.add(createCenteredComponent(label));
 
         String[] gameModes = {"Gracz vs AI", "Gracz vs Gracz"};
         JComboBox<String> modeComboBox = new JComboBox<>(gameModes);
@@ -90,11 +92,15 @@ public class ChessMenu {
         modeComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
         modeComboBox.addActionListener(e->playerVsAI = "Gracz vs AI".equals(modeComboBox.getSelectedItem()));
 
-        settingsPanel.add(modeComboBox);
+        settingsPanel.add(createCenteredComponent(modeComboBox));
+
+        settingsPanel.add(Box.createVerticalStrut(20));
 
         JButton backButton = createButton("Powrót");
         backButton.addActionListener(e->cardLayout.show(mainPanel, "Main Menu"));
-        settingsPanel.add(backButton);
+        settingsPanel.add(createCenteredComponent(backButton));
+
+        settingsPanel.add(Box.createVerticalGlue());
 
         JLabel authors = new JLabel("<html>Autorzy:<br/>Kamil Derszniak<br/>Julia Danilczuk</html>", SwingConstants.CENTER);
         authors.setFont(new Font("Arial", Font.BOLD, 24));
