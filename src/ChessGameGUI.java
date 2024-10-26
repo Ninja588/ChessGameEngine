@@ -167,6 +167,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
                 chessBoard.movePiece(selectedX, selectedY, targetX, targetY,false);
 
                 if(chessBoard.ok) {
+                    //animateMove(selectedX, selectedY, targetX, targetY, "Pawn", selectedPiece.isWhite);
                     clickedSquare.setIcon(selectedSquare.getIcon());
                     selectedSquare.setIcon(null);
                     if(chessBoard.enpassantWhite) boardSquares[targetX-1][targetY].setIcon(null);

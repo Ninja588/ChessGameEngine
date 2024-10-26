@@ -1045,7 +1045,7 @@ public class ChessBoard {
                     } else if (piece instanceof Queen) {
                         score += piece.isWhite ? WHITE_QUEEN_TABLE[index] : -BLACK_QUEEN_TABLE[index];
                     } else if (piece instanceof King) {
-                        isEndGame = findBothQueens();
+                        boolean isEndGame = findBothQueens();
                         if(isEndGame) score += piece.isWhite ? WHITE_KING_ENDGAME_TABLE[index] : BLACK_KING_ENDGAME_TABLE[index];
                         else score += piece.isWhite ? WHITE_KING_TABLE[index] : BLACK_KING_TABLE[index];
                     } else if (piece instanceof Rook) {
@@ -1056,8 +1056,6 @@ public class ChessBoard {
         }
         return score;
     }
-
-    private boolean isEndGame = false;
 
     private boolean findBothQueens()
     {
@@ -1087,17 +1085,17 @@ public class ChessBoard {
             -50, -50, -50, -50, -50, -50, -50, -50,
             -10, -10, -20, -30, -30, -20, -10, -10,
             5,  5, 10, -15, -15, 10,  5,  -5,
-             0,   0,  0, -25, -25,  0,  0,  0,
+             0,   0,  0, -35, -35,  0,  0,  0,
             -5,   5,  10,-10, -10, 10, 5,  -5,
-            -5, -10, -10, 20, 20, -10, -10, -5,
+            -5, -10, -10, 40, 40, -10, -10, -5,
              0,   0,   0,  0,  0,   0,   0,  0
     };
 
     private static final int[] WHITE_PAWN_TABLE = new int[] {
             0,  0,  0,  0,  0,  0,  0,  0,
-            5, 10, 10,-20,-20, 10, 10,  5,
+            5, 10, 10,-40,-40, 10, 10,  5,
             5, -5,-10, 10, 10,-10, -5,  5,
-            0,  0,  0, 25, 25,  0,  0,  0,
+            0,  0,  0, 35, 35,  0,  0,  0,
             5,  5, 10, 15, 15, 10,  5,  5,
             10, 10, 20, 35, 35, 20, 10, 10,
             50, 50, 50, 50, 50, 50, 50, 50,
@@ -1112,7 +1110,7 @@ public class ChessBoard {
             20, 30, 30, 40, 40, 30, 30, 20,
             10, 20, 20, 20, 20, 20, 20, 10,
             -20,  -20,   50,   50,   50,   50,  -20,  -20,
-            -20,  -25,  -45,   0,   0,  -10,  -45,  -20
+            -20,  -25,  -45,   10,   0,  10,  -45,  -20
     };
 
     private static final int[] WHITE_KING_TABLE = new int[] {
@@ -1172,7 +1170,7 @@ public class ChessBoard {
     };
 
     private static final int[] WHITE_BISHOP_TABLE = new int[] {
-            -20, -20, -25, -10, -10, -25, -10, -20,
+            -20, -20, -30, -10, -10, -30, -10, -20,
             -10,   5,   0,   0,   0,   0,   5, -10,
             -10,  10,  10,  10,  10,  10,  10, -10,
             -10,   0,  10,  10,  10,  10,   0, -10,
@@ -1190,7 +1188,7 @@ public class ChessBoard {
             10,  0, -10, -10, -10, -10,  0, 10,
             10, -10, -10, -10, -10, -10, -10, 10,
             10, -5,  0,  0,  0,  0, -5,  10,
-            20, 10, 25, 10, 10, 25, 10, 20
+            20, 10, 30, 10, 10, 30, 10, 20
     };
 
     private static final int[] BLACK_ROOK_TABLE = new int[] {
@@ -1223,11 +1221,11 @@ public class ChessBoard {
             30,  0, -15, -20, -20, -15,  0, 30,
             30,  -5, -10, -15, -15, -10,  -5, 30,
             40, -20,  0,  5,  5,  0, -20, 40,
-            50, 40,  30,  30,  30,  30,  40, 50
+            50, 30,  30,  30,  30,  30,  30, 50
     };
 
     private static final int[] WHITE_KNIGHT_TABLE = new int[] {
-            -50,-40,-30,-30,-30,-30,-40,-50,
+            -50,-30,-30,-30,-30,-30,-30,-50,
             -40,-20,  0,  5,  5,  0,-20,-40,
             -30,  5, 10, 15, 15, 10,  5,-30,
             -30,  0, 15, 20, 20, 15,  0,-30,
