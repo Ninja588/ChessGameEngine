@@ -18,12 +18,10 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
 
     private static JPanel mainPanel;
     private static CardLayout cardLayout;
-    private static JFrame frame;
 
-    public ChessGameGUI(boolean AIenabled, JPanel mainPanel, CardLayout cardLayout, JFrame frame) {
+    public ChessGameGUI(boolean AIenabled, JPanel mainPanel, CardLayout cardLayout) {
         ChessGameGUI.cardLayout = cardLayout;
         ChessGameGUI.mainPanel = mainPanel;
-        ChessGameGUI.frame = frame;
 
 
         chessBoard.setPromotionListener(this);
@@ -32,7 +30,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         //JFrame frame = new JFrame("Szachy");
         //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //frame.setSize(800, 800);
-        frame.add(boardPanel);
+        //gamePanel.setSize(800, 600);
 
         resetGUIBoard();
 
@@ -72,7 +70,8 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
 
     public JPanel getGamePanel() {
         //mainPanel.add(gamePanel);
-        return new JPanel();
+        //gamePanel.add(boardPanel);
+        return boardPanel;
     }
 
 //    public static void main(String[] args) {
@@ -87,23 +86,28 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
     }
 
     private static void initializeBoard() {
-        for(int i = 0; i < 8; i++) {
-            for(int j = 0; j < 8; j++) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 0;
+        gbc.weighty = 0;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 JButton square = new JButton();
                 square.addActionListener(ChessGameGUI::handleMove);
-
-                if((i + j) % 2 == 0) {
+                square.setFocusPainted(false);
+                if ((i + j) % 2 == 0) {
                     square.setBackground(Color.DARK_GRAY);
                 } else {
                     square.setBackground(Color.WHITE);
                 }
-
                 boardSquares[i][j] = square;
-                boardPanel.add(square);
-
+                gbc.gridx = i;
+                gbc.gridy = j;
+                boardPanel.add(square, gbc);
                 addPiece(square, i, j);
             }
         }
+
     }
 
     private static void addPiece(JButton square, int i, int j) {
@@ -150,8 +154,10 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         //JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(boardPanel);
         gameCheckTimer.stop();
         //frame.dispose();
+        //frame.remove(boardPanel);
+        //frame.remove(gamePanel);
 
-        frame.remove(boardPanel);
+
         cardLayout.show(mainPanel, "Main Menu");
 
         //new ChessMenu();

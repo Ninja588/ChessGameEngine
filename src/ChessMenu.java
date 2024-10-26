@@ -10,11 +10,19 @@ public class ChessMenu {
     private static JFrame frame;
     private static JPanel mainPanel;
     private static CardLayout cardLayout;
+    private static int width, height;
+    private static String lastRes;
 
     public ChessMenu() {
         frame = new JFrame("Szachy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 800);
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        width = gd.getDisplayMode().getWidth();
+        height = gd.getDisplayMode().getHeight();
+        //frame.setSize(width, height);
+        //frame.dispose();
+        frame.setUndecorated(true);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
@@ -30,7 +38,7 @@ public class ChessMenu {
     }
 
     private JPanel createMenuPanel() {
-        JPanel menuPanel = new BackgroundPanel();
+        JPanel menuPanel = new BackgroundPanel("menu.png");
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
 
         menuPanel.add(Box.createVerticalGlue());
@@ -73,7 +81,7 @@ public class ChessMenu {
     }
 
     private JPanel createSettingsPanel() {
-        JPanel settingsPanel = new BackgroundPanel();
+        JPanel settingsPanel = new BackgroundPanel("menu.png");
         //settingsPanel.setBackground(new Color(70, 130, 180));
         settingsPanel.setLayout(new BoxLayout(settingsPanel, BoxLayout.Y_AXIS));
 
@@ -93,6 +101,90 @@ public class ChessMenu {
         modeComboBox.addActionListener(e->playerVsAI = "Gracz vs AI".equals(modeComboBox.getSelectedItem()));
 
         settingsPanel.add(createCenteredComponent(modeComboBox));
+
+        settingsPanel.add(Box.createVerticalStrut(20));
+
+        JCheckBox fullscreenCheckbox = new JCheckBox("Fullscreen", true);
+
+        String nativeRes = width+"x"+height+" (native)";
+        lastRes = nativeRes;
+        String[] resolutions = {nativeRes, "800x600", "1366x768", "1600x900", "1920x1080", "2560x1440"};
+
+        JComboBox<String> resolutionComboBox = new JComboBox<>(resolutions);
+        resolutionComboBox.setFont(new Font("Arial", Font.PLAIN, 18));
+        resolutionComboBox.setMaximumSize(new Dimension(200,30));
+        resolutionComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+        resolutionComboBox.addActionListener(e -> {
+            String selectedResolution = (String) resolutionComboBox.getSelectedItem();
+            if(selectedResolution != null && !fullscreenCheckbox.isSelected()) {
+                switch (selectedResolution) {
+                    case "800x600":
+                        width = 800;
+                        height = 600;
+                        lastRes = width+"x"+height;
+                        frame.setSize(width, height);
+                        break;
+                    case "1366x768":
+                        width = 1366;
+                        height = 768;
+                        lastRes = width+"x"+height;
+                        frame.setSize(width, height);
+                        break;
+                    case "1600x900":
+                        width = 1600;
+                        height = 900;
+                        lastRes = width+"x"+height;
+                        frame.setSize(width, height);
+                        break;
+                    case "1920x1080":
+                        width = 1920;
+                        height = 1080;
+                        lastRes = width+"x"+height;
+                        frame.setSize(width, height);
+                        break;
+                    case "2560x1440":
+                        width = 2560;
+                        height = 1440;
+                        lastRes = width+"x"+height;
+                        frame.setSize(width, height);
+                        break;
+                }
+            } else resolutionComboBox.setSelectedIndex(0);
+        });
+        settingsPanel.add(createCenteredComponent(resolutionComboBox));
+
+        settingsPanel.add(Box.createVerticalStrut(20));
+
+        //JCheckBox fullscreenCheckbox = new JCheckBox("Fullscreen");
+        fullscreenCheckbox.setFont(new Font("Arial", Font.PLAIN, 18));
+        fullscreenCheckbox.setMaximumSize(new Dimension(200, 30));
+        fullscreenCheckbox.setAlignmentX(Component.CENTER_ALIGNMENT);
+        fullscreenCheckbox.setOpaque(false);
+        fullscreenCheckbox.addActionListener(e -> {
+            if (fullscreenCheckbox.isSelected()) {
+                frame.dispose();
+                frame.setUndecorated(true);
+                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                frame.setVisible(true);
+                GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+                width = gd.getDisplayMode().getWidth();
+                height = gd.getDisplayMode().getHeight();
+                resolutionComboBox.setSelectedIndex(0);
+            } else {
+                frame.dispose();
+                frame.setUndecorated(false);
+                frame.setSize(width, height);
+                frame.setExtendedState(JFrame.NORMAL);
+                frame.setVisible(true);
+                for(int i=0;i<resolutions.length;i++) {
+                    if(resolutions[i].equals(lastRes)) {
+                        resolutionComboBox.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+        });
+        settingsPanel.add(createCenteredComponent(fullscreenCheckbox));
 
         settingsPanel.add(Box.createVerticalStrut(20));
 
@@ -127,8 +219,7 @@ public class ChessMenu {
     }
 
     private static void startGame() {
-
-        ChessGameGUI gameGUI  = new ChessGameGUI(playerVsAI, mainPanel, cardLayout, frame);
+        ChessGameGUI gameGUI  = new ChessGameGUI(playerVsAI, mainPanel, cardLayout);
 
         mainPanel.add(gameGUI.getGamePanel(), "Game");
         cardLayout.show(mainPanel, "Game");
@@ -139,8 +230,8 @@ public class ChessMenu {
     static class BackgroundPanel extends JPanel {
         private final Image backgroundImage;
 
-        public BackgroundPanel() {
-            backgroundImage = new ImageIcon("menu.png").getImage();
+        public BackgroundPanel(String path) {
+            backgroundImage = new ImageIcon(path).getImage();
         }
 
         @Override
