@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.Random;
 
 public class ChessGameGUI implements ChessBoard.PromotionListener {
@@ -15,13 +16,22 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
     private static boolean playerIsWhite;
     private static boolean AIenabled;
 
-    public ChessGameGUI(boolean AIenabled) {
+    private static JPanel mainPanel;
+    private static CardLayout cardLayout;
+    private static JFrame frame;
+
+    public ChessGameGUI(boolean AIenabled, JPanel mainPanel, CardLayout cardLayout, JFrame frame) {
+        ChessGameGUI.cardLayout = cardLayout;
+        ChessGameGUI.mainPanel = mainPanel;
+        ChessGameGUI.frame = frame;
+
+
         chessBoard.setPromotionListener(this);
         chessBoard.resetBoard();
 
-        JFrame frame = new JFrame("Szachy");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 800);
+        //JFrame frame = new JFrame("Szachy");
+        //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //frame.setSize(800, 800);
         frame.add(boardPanel);
 
         resetGUIBoard();
@@ -43,9 +53,26 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
             }
         });
         gameCheckTimer.start();
+
         if(!playerIsWhite && AIenabled) chessBoard.makeAIMove(true);
 
-        frame.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            for(int i = 0; i < 8; i++) {
+                for(int j = 0; j < 8; j++) {
+                    boardSquares[i][j].dispatchEvent(new MouseEvent(boardSquares[i][j],
+                            MouseEvent.MOUSE_DRAGGED,
+                            System.currentTimeMillis(),
+                            0, 0, 0, 1, false));
+                }
+            }
+        });
+
+        //frame.setVisible(true);
+    }
+
+    public JPanel getGamePanel() {
+        //mainPanel.add(gamePanel);
+        return new JPanel();
     }
 
 //    public static void main(String[] args) {
@@ -60,13 +87,13 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
     }
 
     private static void initializeBoard() {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
+        for(int i = 0; i < 8; i++) {
+            for(int j = 0; j < 8; j++) {
                 JButton square = new JButton();
                 square.addActionListener(ChessGameGUI::handleMove);
 
-                if ((i + j) % 2 == 0) {
-                    square.setBackground(Color.GRAY);
+                if((i + j) % 2 == 0) {
+                    square.setBackground(Color.DARK_GRAY);
                 } else {
                     square.setBackground(Color.WHITE);
                 }
@@ -83,17 +110,17 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         String color = (i < 2) ? "white" : "black";
         String pieceName = "";
 
-        if (i == 0 || i == 7) {
-            if (j == 0 || j == 7) pieceName = "Rook";
-            if (j == 1 || j == 6) pieceName = "Knight";
-            if (j == 2 || j == 5) pieceName = "Bishop";
-            if (j == 3) pieceName = "Queen";
-            if (j == 4) pieceName = "King";
-        } else if (i == 1 || i == 6) {
+        if(i == 0 || i == 7) {
+            if(j == 0 || j == 7) pieceName = "Rook";
+            if(j == 1 || j == 6) pieceName = "Knight";
+            if(j == 2 || j == 5) pieceName = "Bishop";
+            if(j == 3) pieceName = "Queen";
+            if(j == 4) pieceName = "King";
+        } else if(i == 1 || i == 6) {
             pieceName = "Pawn";
         }
 
-        if (!pieceName.isEmpty()) {
+        if(!pieceName.isEmpty()) {
             square.setIcon(new ImageIcon("pieces/" + color + pieceName + ".png"));
         }
     }
@@ -102,17 +129,17 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
     public static String tempS;
     public static boolean tempIsWhite;
     public static boolean player = true;
-
+    
     private void checkGameConditions() {
-        if (chessBoard.isCheckmate(true)) {
+        if(chessBoard.isCheckmate(true)) {
             SoundManager.playSound("game-end.wav");
             JOptionPane.showMessageDialog(boardPanel, "Mat! Czarny wygrywaja!");
             returnToMenu();
-        } else if (chessBoard.isCheckmate(false)) {
+        } else if(chessBoard.isCheckmate(false)) {
             SoundManager.playSound("game-end.wav");
             JOptionPane.showMessageDialog(boardPanel, "Mat! Biale wygrywaja!");
             returnToMenu();
-        } else if (chessBoard.isStalemate(true) || chessBoard.isStalemate(false)) {
+        } else if(chessBoard.isStalemate(true) || chessBoard.isStalemate(false)) {
             SoundManager.playSound("game-end.wav");
             JOptionPane.showMessageDialog(boardPanel, "Stalemate!");
             returnToMenu();
@@ -120,22 +147,25 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
     }
 
     private void returnToMenu() {
-        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(boardPanel);
+        //JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(boardPanel);
         gameCheckTimer.stop();
-        frame.dispose();
+        //frame.dispose();
 
-        new ChessMenu();
+        frame.remove(boardPanel);
+        cardLayout.show(mainPanel, "Main Menu");
+
+        //new ChessMenu();
     }
 
     private static void handleMove(ActionEvent e) {
         JButton clickedSquare = (JButton) e.getSource();
 
-        if (selectedSquare == null) {
-            if (clickedSquare.getIcon() != null) {
+        if(selectedSquare == null) {
+            if(clickedSquare.getIcon() != null) {
                 selectedSquare = clickedSquare;
-                for (int i = 0; i < 8; i++) {
-                    for (int j = 0; j < 8; j++) {
-                        if (boardSquares[i][j] == clickedSquare) {
+                for(int i = 0; i < 8; i++) {
+                    for(int j = 0; j < 8; j++) {
+                        if(boardSquares[i][j] == clickedSquare) {
                             selectedX = i;
                             selectedY = j;
                             break;
@@ -163,11 +193,10 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
             Piece selectedPiece = chessBoard.getPiece(selectedX, selectedY);
 
             //System.out.println(selectedPiece);
-            if (selectedPiece != null) {
+            if(selectedPiece != null) {
                 chessBoard.movePiece(selectedX, selectedY, targetX, targetY,false);
 
                 if(chessBoard.ok) {
-                    //animateMove(selectedX, selectedY, targetX, targetY, "Pawn", selectedPiece.isWhite);
                     clickedSquare.setIcon(selectedSquare.getIcon());
                     selectedSquare.setIcon(null);
                     if(chessBoard.enpassantWhite) boardSquares[targetX-1][targetY].setIcon(null);
@@ -209,11 +238,11 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
             throw new RuntimeException(ex);
         }
 
-        if (!chessBoard.isWhiteTurn() && !player && playerIsWhite && AIenabled) { // czarny ai
+        if(!chessBoard.isWhiteTurn() && !player && playerIsWhite && AIenabled) { // czarny ai
             chessBoard.makeAIMove(false);
             player = true;
             chessBoard.printBoard();
-        } else if (chessBoard.isWhiteTurn() && !player && !playerIsWhite && AIenabled) { // bialy ai
+        } else if(chessBoard.isWhiteTurn() && !player && !playerIsWhite && AIenabled) { // bialy ai
             chessBoard.makeAIMove(true);
             player = true;
             chessBoard.printBoard();
@@ -242,8 +271,8 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
     public static void flipBoard() {
         boardPanel.removeAll();
 
-        for (int i = 7; i >= 0; i--) {
-            for (int j = 0; j < 8; j++) {
+        for(int i = 7; i >= 0; i--) {
+            for(int j = 0; j < 8; j++) {
                 boardPanel.add(boardSquares[i][j]);
             }
         }

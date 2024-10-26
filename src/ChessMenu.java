@@ -73,8 +73,8 @@ public class ChessMenu {
     }
 
     private JPanel createSettingsPanel() {
-        JPanel settingsPanel = new JPanel();
-        settingsPanel.setBackground(new Color(70, 130, 180));
+        JPanel settingsPanel = new BackgroundPanel();
+        //settingsPanel.setBackground(new Color(70, 130, 180));
         settingsPanel.setLayout(new BoxLayout(settingsPanel, BoxLayout.Y_AXIS));
 
         JLabel label = new JLabel("Wybierz tryb:", SwingConstants.CENTER);
@@ -121,16 +121,17 @@ public class ChessMenu {
     }
 
     private static void startGame() {
-        if (playerVsAI) {
-            new ChessGameGUI(true);
-        } else {
-            new ChessGameGUI(false);
-        }
-        frame.dispose();
+
+        ChessGameGUI gameGUI  = new ChessGameGUI(playerVsAI, mainPanel, cardLayout, frame);
+
+        mainPanel.add(gameGUI.getGamePanel(), "Game");
+        cardLayout.show(mainPanel, "Game");
+
+        //frame.dispose();
     }
 
     static class BackgroundPanel extends JPanel {
-        private Image backgroundImage;
+        private final Image backgroundImage;
 
         public BackgroundPanel() {
             backgroundImage = new ImageIcon("menu.png").getImage();
