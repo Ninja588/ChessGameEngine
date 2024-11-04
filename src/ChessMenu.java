@@ -1,9 +1,5 @@
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class ChessMenu {
     private static boolean playerVsAI = true;
@@ -12,6 +8,7 @@ public class ChessMenu {
     private static CardLayout cardLayout;
     private static int width, height;
     private static String lastRes;
+    private static Color lightSquaresColor=null, darkSquaresColor=null;
 
     public ChessMenu() {
         frame = new JFrame("Szachy");
@@ -188,6 +185,43 @@ public class ChessMenu {
 
         settingsPanel.add(Box.createVerticalStrut(20));
 
+        JButton lightSquareColorButton = new JButton("Kolor jasnych pól");
+        lightSquareColorButton.setFont(new Font("Arial", Font.PLAIN, 18));
+        lightSquareColorButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lightSquareColorButton.addActionListener(e -> {
+            Color chosenColor = JColorChooser.showDialog(null, "Kolor jasnych pól", Color.WHITE);
+            if (chosenColor != null) {
+                lightSquaresColor = chosenColor;
+            }
+        });
+        settingsPanel.add(createCenteredComponent(lightSquareColorButton));
+
+        settingsPanel.add(Box.createVerticalStrut(20));
+
+        JButton darkSquareColorButton = new JButton("Kolor ciemnych pól");
+        darkSquareColorButton.setFont(new Font("Arial", Font.PLAIN, 18));
+        darkSquareColorButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        darkSquareColorButton.addActionListener(e -> {
+            Color chosenColor = JColorChooser.showDialog(null, "Kolor ciemnych pól", Color.WHITE);
+            if (chosenColor != null) {
+                darkSquaresColor = chosenColor;
+            }
+        });
+        settingsPanel.add(createCenteredComponent(darkSquareColorButton));
+
+        settingsPanel.add(Box.createVerticalStrut(20));
+
+        JButton resetSquareColorButton = new JButton("Reset kolorów pól do domyślnych");
+        resetSquareColorButton.setFont(new Font("Arial", Font.PLAIN, 18));
+        resetSquareColorButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        resetSquareColorButton.addActionListener(e -> {
+            darkSquaresColor = null;
+            lightSquaresColor = null;
+        });
+        settingsPanel.add(createCenteredComponent(resetSquareColorButton));
+
+        settingsPanel.add(Box.createVerticalStrut(20));
+
         JButton backButton = createButton("Powrót");
         backButton.addActionListener(e->cardLayout.show(mainPanel, "Main Menu"));
         settingsPanel.add(createCenteredComponent(backButton));
@@ -214,12 +248,12 @@ public class ChessMenu {
         return button;
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(ChessMenu::new);
-    }
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(ChessMenu::new);
+//    }
 
     private static void startGame() {
-        ChessGameGUI gameGUI  = new ChessGameGUI(playerVsAI, mainPanel, cardLayout);
+        ChessGameGUI gameGUI  = new ChessGameGUI(playerVsAI, mainPanel, cardLayout, lightSquaresColor, darkSquaresColor);
 
         mainPanel.add(gameGUI.getGamePanel(), "Game");
         cardLayout.show(mainPanel, "Game");

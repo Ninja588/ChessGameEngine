@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 public class Queen extends Piece{
     public Queen(boolean isWhite) {
-        super(isWhite, false);
+        super(isWhite, false, PieceType.QUEEN);
     }
 
     @Override

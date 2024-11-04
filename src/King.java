@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 public class King extends Piece {
     public King(boolean isWhite) {
-        super(isWhite, false);
+        super(isWhite, false, PieceType.KING);
     }
 
     public boolean castle = false;

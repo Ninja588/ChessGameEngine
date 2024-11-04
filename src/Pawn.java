@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 public class Pawn extends Piece{
     public Pawn(boolean isWhite) {
-        super(isWhite,false);
+        super(isWhite,false, PieceType.PAWN);
     }
 
     public boolean hasMovedTwoSquares = false;
@@ -19,7 +19,7 @@ public class Pawn extends Piece{
         // ruch do przodu
         if (x + direction >= 0 && x + direction < 8) {
             if (board.getPiece(x + direction, y) == null) {
-                if(!board.isPinned(this,x,y) || !board.wouldExposeKing(x,y,x+direction,y))
+                if(!board.isPinned(this,x,y) || !board.wouldExposeKing(x, y,x+direction, y))
                     legalMoves.add(new Move(x, y, x + direction, y, false));
             }
         }
@@ -47,8 +47,7 @@ public class Pawn extends Piece{
         }
 
         // enpassant
-        int enPassantY = isWhite ? 3 : 4;
-        if (y - 1 >= 0 && board.getPiece(x, y - 1) instanceof Pawn &&
+        if (y - 1 >= 0 && board.getPiece(x, y - 1) != null && board.getPiece(x, y - 1).pieceType == PieceType.PAWN &&
                 board.getPiece(x, y - 1).isWhite != this.isWhite &&
                 ((Pawn) board.getPiece(x, y - 1)).hasMovedTwoSquares) {
             if(!board.isPinned(this,x,y) || !board.wouldExposeKing(x,y,x+direction,y-1)) {
@@ -57,7 +56,7 @@ public class Pawn extends Piece{
             }
         }
 
-        if (y + 1 < 8 && board.getPiece(x, y + 1) instanceof Pawn &&
+        if (y + 1 < 8 && board.getPiece(x, y + 1) != null && board.getPiece(x, y + 1).pieceType == PieceType.PAWN &&
                 board.getPiece(x, y + 1).isWhite != this.isWhite &&
                 ((Pawn) board.getPiece(x, y + 1)).hasMovedTwoSquares) {
             if(!board.isPinned(this,x,y) || !board.wouldExposeKing(x,y,x+direction,y+1)) {

@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 public class Knight extends Piece{
     public Knight(boolean isWhite) {
-        super(isWhite, false);
+        super(isWhite, false, PieceType.KNIGHT);
     }
 
     @Override

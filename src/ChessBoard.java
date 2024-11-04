@@ -4,6 +4,7 @@ import java.util.Random;
 import java.util.Stack;
 import java.util.HashMap;
 import java.util.Map;
+
 public class ChessBoard {
     private boolean whiteTurn = true;
     private Piece[][] board;
@@ -25,8 +26,8 @@ public class ChessBoard {
         return boardState.toString();
     }
 
-    public void recordBoardState() {
-        String boardState = generateBoardState();
+    public void recordBoardState(boolean isWhiteTurn) {
+        String boardState = generateBoardState() + (isWhiteTurn ? "W" : "B");
         boardStates.put(boardState, boardStates.getOrDefault(boardState, 0) + 1);
     }
 
@@ -136,7 +137,7 @@ public class ChessBoard {
         }
 
         // sprawdzanie czy krol jest w szachu albo moglby dostac szacha podczas roszady
-        if((isInCheck(isWhite) || isInCheckAfterMove(isWhite, row, 5) || isInCheckAfterMove(isWhite, row, 6)) && (king instanceof King && !((King) king).castle)) {
+        if((isInCheck(isWhite) || isInCheckAfterMove(isWhite, row, 5) || isInCheckAfterMove(isWhite, row, 6)) && (king.pieceType == Piece.PieceType.KING && !((King) king).castle)) {
             return false;
         }
 
@@ -163,7 +164,7 @@ public class ChessBoard {
         }
 
         // sprawdzanie czy krol jest w szachu albo moglby dostac szacha podczas roszady
-        if ((isInCheck(isWhite) || isInCheckAfterMove(isWhite, row, 2) || isInCheckAfterMove(isWhite, row, 3)) && (king instanceof King && !((King) king).castle)) {
+        if((isInCheck(isWhite) || isInCheckAfterMove(isWhite, row, 2) || isInCheckAfterMove(isWhite, row, 3)) && (king.pieceType == Piece.PieceType.KING && !((King) king).castle)) {
             return false;
         }
 
@@ -179,7 +180,7 @@ public class ChessBoard {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
-                if (piece instanceof King && piece.isWhite == isWhite) {
+                if (piece != null && piece.pieceType == Piece.PieceType.KING && piece.isWhite == isWhite) {
                     kingX = i;
                     kingY = j;
                     break;
@@ -187,7 +188,7 @@ public class ChessBoard {
             }
         }
 
-        if (kingX == -1 || kingY == -1) {
+        if (kingX == -1) {
             return false;
         }
 
@@ -198,7 +199,7 @@ public class ChessBoard {
                     List<Move> legalMoves = piece.getLegalMoves(this, i, j);
                     for (Move move : legalMoves) {
                         if (move.endX == kingX && move.endY == kingY) {
-                            if((piece instanceof Pawn && (move.endX + 1 == kingX || move.endX - 1 == kingX))) continue;
+                            if((piece.pieceType == Piece.PieceType.PAWN && (move.endX + 1 == kingX || move.endX - 1 == kingX))) continue;
                             if(!checkSound) {
                                 SoundManager.playSound("move-check.wav");
                                 checkSound = true;
@@ -218,13 +219,13 @@ public class ChessBoard {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
                 if (piece != null && piece.isWhite == byWhite) {
-                    if (piece instanceof Pawn) {
+                    if (piece.pieceType == Piece.PieceType.PAWN) {
                         // pion ataki
                         int direction = byWhite ? 1 : -1;
                         if ((x == i + direction && (y == j + 1 || y == j - 1))) {
                             return true;
                         }
-                    } else if (piece instanceof Knight) {
+                    } else if (piece.pieceType == Piece.PieceType.KNIGHT) {
                         // skoczek ataki
                         int[][] knightMoves = {{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
                         for (int[] move : knightMoves) {
@@ -232,28 +233,28 @@ public class ChessBoard {
                                 return true;
                             }
                         }
-                    } else if (piece instanceof Rook) {
+                    } else if (piece.pieceType == Piece.PieceType.ROOK) {
                         // rook ataki
                         if (x == i || y == j) {
                             if (isPathClear(i, j, x, y)) {
                                 return true;
                             }
                         }
-                    } else if (piece instanceof Bishop) {
+                    } else if (piece.pieceType == Piece.PieceType.BISHOP) {
                         // goniec ataki
                         if (Math.abs(x - i) == Math.abs(y - j)) {
                             if (isPathClear(i, j, x, y)) {
                                 return true;
                             }
                         }
-                    } else if (piece instanceof Queen) {
+                    } else if (piece.pieceType == Piece.PieceType.QUEEN) {
                         // krolowka ataki
                         if ((x == i || y == j) || (Math.abs(x - i) == Math.abs(y - j))) {
                             if (isPathClear(i, j, x, y)) {
                                 return true;
                             }
                         }
-                    } else if (piece instanceof King) {
+                    } else if (piece.pieceType == Piece.PieceType.KING) {
                         // krol ataki
                         int[][] kingMoves = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
                         for (int[] move : kingMoves) {
@@ -298,7 +299,7 @@ public class ChessBoard {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
-                if (piece instanceof King && piece.isWhite == isWhite) {
+                if (piece != null && piece.pieceType == Piece.PieceType.KING && piece.isWhite == isWhite) {
                     kingX = i;
                     kingY = j;
                     break;
@@ -306,7 +307,7 @@ public class ChessBoard {
             }
         }
 
-        if (kingX == -1 || kingY == -1) {
+        if (kingX == -1) {
             return false;
         }
 
@@ -374,7 +375,7 @@ public class ChessBoard {
 
     private Stack<Piece> capturedPieces = new Stack<>();
 
-    private void makeMove(Move move) {
+    public void makeMove(Move move) {
         Piece piece = board[move.startX][move.startY];
         Piece targetPiece = board[move.endX][move.endY];
 
@@ -384,7 +385,7 @@ public class ChessBoard {
         board[move.startX][move.startY] = null;
     }
 
-    private void undoMove(Move move) {
+    public void undoMove(Move move) {
         Piece piece = board[move.endX][move.endY];
 
         board[move.startX][move.startY] = piece;
@@ -407,7 +408,7 @@ public class ChessBoard {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
-                if (piece instanceof King && piece.isWhite == isWhite) {
+                if (piece != null && piece.pieceType == Piece.PieceType.KING && piece.isWhite == isWhite) {
                     kingX = i;
                     kingY = j;
                     break;
@@ -416,7 +417,7 @@ public class ChessBoard {
         }
 
         // jak nie znaleziono krola (bron boze zeby tak bylo) to nie da sie
-        if (kingX == -1 || kingY == -1) {
+        if (kingX == -1) {
             return false;
         }
 
@@ -587,7 +588,7 @@ public class ChessBoard {
         }
 
         Piece piece = board[startX][startY];
-        Piece piece2;
+        //Piece piece2;
         enpassantWhite = false;
         enpassantBlack = false;
         ok = false;
@@ -606,8 +607,8 @@ public class ChessBoard {
 //                    if(piece instanceof King) {
 //                        ((King) piece).checkFlag = false;
 //                    }
-                    if (piece instanceof King && !((King) piece).castle && (canCastleKingSide(piece.isWhite) || canCastleQueenSide(piece.isWhite))) {
-                        boolean isWhite = piece.isWhite;
+                    if (piece.pieceType == Piece.PieceType.KING && !((King) piece).castle && (canCastleKingSide(piece.isWhite) || canCastleQueenSide(piece.isWhite))) {
+                        //boolean isWhite = piece.isWhite;
                         // roszada krola, krolowki
                         if (endY == 6 && (endX == 0 || endX == 7)) { //
                             board[endX][endY] = piece;
@@ -629,7 +630,7 @@ public class ChessBoard {
                             }
                             SoundManager.playSound("castle.wav");
                             toggleTurn();
-                            recordBoardState();
+                            recordBoardState(isWhiteTurn());
                             ((King) piece).castle = true;
                             return;
                         } else if (endY == 2 && (endX == 0 || endX == 7)) { //
@@ -652,7 +653,7 @@ public class ChessBoard {
                             }
                             SoundManager.playSound("castle.wav");
                             toggleTurn();
-                            recordBoardState();
+                            recordBoardState(isWhiteTurn());
                             ((King) piece).castle = true;
                             return;
                         }
@@ -671,7 +672,7 @@ public class ChessBoard {
                         //return;
                     }
                     // piony mechaniki (prosze zabijcie tego co wymyslic en passant)
-                    if (piece instanceof Pawn) {
+                    if (piece.pieceType == Piece.PieceType.PAWN) {
                         // en passant
                         if (Math.abs(endX - startX) == 2) {
                             //System.out.println("PORUSZYLEM SIE KURWA DWA POLE ENPASSANT ACITVATED");
@@ -709,7 +710,7 @@ public class ChessBoard {
                         }
                     }
                     SoundManager.playSound("move.wav");
-                    recordBoardState();
+                    recordBoardState(isWhiteTurn());
                     toggleTurn();
                 } else {
                     System.out.println("zly ruch");
@@ -755,7 +756,7 @@ public class ChessBoard {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
-                if (piece instanceof Pawn && piece.isWhite == isWhite) {
+                if (piece!=null && piece.pieceType == Piece.PieceType.PAWN && piece.isWhite == isWhite) {
                     ((Pawn) piece).hasMovedTwoSquares = false;
                 }
             }
@@ -768,7 +769,7 @@ public class ChessBoard {
         // znalezenie pozycji krola
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if (board[i][j] instanceof King && board[i][j].isWhite == piece.isWhite) {
+                if (board[i][j] != null && board[i][j].pieceType == Piece.PieceType.KING && board[i][j].isWhite == piece.isWhite) {
                     kingX = i;
                     kingY = j;
                     break;
@@ -782,12 +783,12 @@ public class ChessBoard {
 
         // sprwadzanie czy krol bylby w szachu po usunieciu figury
         boolean isPinned = isSquareAttacked(kingX, kingY, !piece.isWhite);
-        if(tempPiece instanceof Pawn && x<8 && y<7 && x>0 && y>0) {
+        if(tempPiece != null && tempPiece.pieceType == Piece.PieceType.PAWN && x<8 && y<7 && x>0 && y>0) {
             Piece tempPiecePawn1 = getPiece(x,y-1);
             Piece tempPiecePawn2 = getPiece(x,y+1);
-            if((tempPiecePawn1 instanceof Pawn && ((Pawn) tempPiecePawn1).hasMovedTwoSquares) ||
-                    (tempPiecePawn2 instanceof Pawn && ((Pawn) tempPiecePawn2).hasMovedTwoSquares) &&
-                            isSquareAttacked(kingX, kingY, !piece.isWhite)) {
+            if(tempPiecePawn1 != null && tempPiecePawn2 != null && ((tempPiecePawn1.pieceType == Piece.PieceType.PAWN && ((Pawn) tempPiecePawn1).hasMovedTwoSquares) ||
+                    (tempPiecePawn2.pieceType == Piece.PieceType.PAWN && ((Pawn) tempPiecePawn2).hasMovedTwoSquares) &&
+                            isSquareAttacked(kingX, kingY, !piece.isWhite))) {
                 isPinned = false;
             }
         }
@@ -811,7 +812,7 @@ public class ChessBoard {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
-                if (piece instanceof King && piece.isWhite == movingPiece.isWhite) {
+                if (piece != null && piece.pieceType == Piece.PieceType.KING && piece.isWhite == movingPiece.isWhite) {
                     kingX = i;
                     kingY = j;
                     break;
@@ -912,13 +913,14 @@ public class ChessBoard {
         }
         return allLegalMoves;
     }
+
     public void makeAIMove(boolean isWhite) {
         List<Move> legalMoves = getAllLegalMoves(isWhite);
         boolean castleON = false;
         boolean castleCheck = false;
         Move tempMove = null;
 
-        if (!legalMoves.isEmpty()) {
+        if(!legalMoves.isEmpty()) {
             Move bestMove = null;
             int bestValue = isWhite ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
@@ -933,7 +935,7 @@ public class ChessBoard {
                     bestMove = move;
                     tempMove = move;
 
-                } else if (!isWhite && boardValue < bestValue) {
+                } else if(!isWhite && boardValue < bestValue) {
                     bestValue = boardValue;
                     bestMove = move;
                     tempMove = move;
@@ -941,9 +943,11 @@ public class ChessBoard {
 
             }
             if(castleCheck) {
-                Piece tempPieceKing = getPiece(tempMove.startX, tempMove.startY);
-                if(tempPieceKing instanceof King && !((King) tempPieceKing).castle && !tempPieceKing.hasMoved) {
-                    castleON = true;
+                if(tempMove != null) {
+                    Piece tempPieceKing = getPiece(tempMove.startX, tempMove.startY);
+                    if (tempPieceKing != null && tempPieceKing.pieceType == Piece.PieceType.KING && !((King) tempPieceKing).castle && !tempPieceKing.hasMoved) {
+                        castleON = true;
+                    }
                 }
             }
 
@@ -951,53 +955,36 @@ public class ChessBoard {
             Move move = legalMoves.get(rand.nextInt(legalMoves.size()));
             if(bestMove == null) bestMove = move;
             Piece tempPiece = getPiece(bestMove.startX, bestMove.startY);
-            String tempName = null;
-            switch(tempPiece.getSymbol()) {
-                case "p":
-                case "P":
-                    tempName = "Pawn";
-                    break;
-                case "n":
-                case "N":
-                    tempName = "Knight";
-                    break;
-                case "k":
-                case "K":
-                    tempName = "King";
-                    break;
-                case "r":
-                case "R":
-                    tempName = "Rook";
-                    break;
-                case "q":
-                case "Q":
-                    tempName = "Queen";
-                    break;
-                case "b":
-                case "B":
-                    tempName = "Bishop";
-                    break;
+            if(tempPiece!=null) {
+                String tempName = switch (tempPiece.pieceType) {
+                    case PAWN -> "Pawn";
+                    case KNIGHT -> "Knight";
+                    case KING -> "King";
+                    case ROOK -> "Rook";
+                    case QUEEN -> "Queen";
+                    case BISHOP -> "Bishop";
+                };
+                movePiece(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, true);
+                if (tempPiece.pieceType == Piece.PieceType.PAWN && (bestMove.endX == 7 || bestMove.endX == 0)) {
+                    Piece promotedPiece = getBestPromotionPiece(isWhite);
+                    board[bestMove.endX][bestMove.endY] = promotedPiece;
+                    ChessGameGUI.updateBoard(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, "Queen", isWhite);
+                    SoundManager.playSound("promote.wav");
+                    AIpromoted = true;
+                } else if (tempPiece.pieceType == Piece.PieceType.KING && (!((King) tempPiece).castle && (bestMove.endY == 2 &&
+                        (bestMove.endX == 0 || bestMove.endX == 7)) || (bestMove.endY == 6 && (bestMove.endX == 0 || bestMove.endX == 7))) && castleON);
+                else
+                    ChessGameGUI.updateBoard(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, tempName, isWhite);
             }
-            movePiece(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, true);
-            if (tempPiece instanceof Pawn && (bestMove.endX == 7 || bestMove.endX == 0)) {
-                Piece promotedPiece = getBestPromotionPiece(isWhite);
-                board[bestMove.endX][bestMove.endY] = promotedPiece;
-                ChessGameGUI.updateBoard(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, "Queen", isWhite);
-                SoundManager.playSound("promote.wav");
-                AIpromoted = true;
-            }
-            else if(tempPiece instanceof King && (!((King) tempPiece).castle && (bestMove.endY == 2 &&
-                    (bestMove.endX == 0 || bestMove.endX == 7)) || (bestMove.endY == 6 && (bestMove.endX == 0 || bestMove.endX == 7))) && castleON);
-            else ChessGameGUI.updateBoard(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, tempName, isWhite);
         }
     }
 
     public int minimax(int depth, int alpha, int beta, boolean isMaximizing) {
-        if (depth == 0) {
+        if(depth == 0) {
             return evaluateBoard();
         }
 
-        if (isMaximizing) {
+        if(isMaximizing) {
             int maxEval = Integer.MIN_VALUE;
             List<Move> legalMoves = getAllLegalMoves(true);
             for (Move move : legalMoves) {
@@ -1005,8 +992,8 @@ public class ChessBoard {
                 int eval = minimax(depth - 1, alpha, beta, false);
                 undoMove(move);
                 maxEval = Math.max(maxEval, eval);
-                alpha = Math.max(alpha, eval);
-                if (beta <= alpha) {
+                alpha = Math.max(alpha, maxEval);
+                if(beta <= alpha) {
                     break;
                 }
             }
@@ -1019,8 +1006,8 @@ public class ChessBoard {
                 int eval = minimax(depth - 1, alpha, beta, true);
                 undoMove(move);
                 minEval = Math.min(minEval, eval);
-                beta = Math.min(beta, eval);
-                if (beta <= alpha) {
+                beta = Math.min(beta, minEval);
+                if(beta <= alpha) {
                     break;
                 }
             }
@@ -1030,26 +1017,37 @@ public class ChessBoard {
 
     public int evaluateBoard() {
         int score = 0;
+
+        boolean isEndGame = findBothQueens();
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
                 if (piece != null) {
+                    int index = i*8+j;
                     score += pieceValue(piece);
-                    int index = i * 8 + j;
-                    if (piece instanceof Pawn) {
-                        score += piece.isWhite ? WHITE_PAWN_TABLE[index] : BLACK_PAWN_TABLE[index];
-                    } else if (piece instanceof Knight) {
-                        score += piece.isWhite ? WHITE_KNIGHT_TABLE[index] : BLACK_KNIGHT_TABLE[index];
-                    } else if (piece instanceof Bishop) {
-                        score += piece.isWhite ? WHITE_BISHOP_TABLE[index] : BLACK_BISHOP_TABLE[index];
-                    } else if (piece instanceof Queen) {
-                        score += piece.isWhite ? WHITE_QUEEN_TABLE[index] : -BLACK_QUEEN_TABLE[index];
-                    } else if (piece instanceof King) {
-                        boolean isEndGame = findBothQueens();
-                        if(isEndGame) score += piece.isWhite ? WHITE_KING_ENDGAME_TABLE[index] : BLACK_KING_ENDGAME_TABLE[index];
-                        else score += piece.isWhite ? WHITE_KING_TABLE[index] : BLACK_KING_TABLE[index];
-                    } else if (piece instanceof Rook) {
-                        score += piece.isWhite ? WHITE_ROOK_TABLE[index] : BLACK_ROOK_TABLE[index];
+
+                    switch (piece.pieceType) {
+                        case PAWN:
+                            score += piece.isWhite ? WHITE_PAWN_TABLE[index] : BLACK_PAWN_TABLE[index];
+                            break;
+                        case KNIGHT:
+                            score += piece.isWhite ? WHITE_KNIGHT_TABLE[index] : BLACK_KNIGHT_TABLE[index];
+                            break;
+                        case BISHOP:
+                            score += piece.isWhite ? WHITE_BISHOP_TABLE[index] : BLACK_BISHOP_TABLE[index];
+                            break;
+                        case ROOK:
+                            score += piece.isWhite ? WHITE_ROOK_TABLE[index] : BLACK_ROOK_TABLE[index];
+                            break;
+                        case QUEEN:
+                            score += piece.isWhite ? WHITE_QUEEN_TABLE[index] : -BLACK_QUEEN_TABLE[index];
+                            break;
+                        case KING:
+                            score += piece.isWhite
+                                    ? (isEndGame ? WHITE_KING_ENDGAME_TABLE[index] : WHITE_KING_TABLE[index])
+                                    : (isEndGame ? BLACK_KING_ENDGAME_TABLE[index] : BLACK_KING_TABLE[index]);
+                            break;
                     }
                 }
             }
@@ -1065,30 +1063,31 @@ public class ChessBoard {
 
         for(int i=0;i<8;i++) {
             for(int j=0;j<8;j++) {
-                Piece temp = null;
-                temp = board[i][j];
-                if(temp instanceof Queen && temp.isWhite) queen1 = temp;
-                else if(temp instanceof Queen) queen2 = temp;
-                if(temp!=null) tempCounter++;
+                Piece temp = board[i][j];
+                if(temp != null) {
+                    if (temp.pieceType == Piece.PieceType.QUEEN && temp.isWhite) queen1 = temp;
+                    else if (temp.pieceType == Piece.PieceType.QUEEN) queen2 = temp;
+                    tempCounter++;
+                }
             }
         }
 
-        if(queen1 != null && queen2 != null) return false;
-        else if(tempCounter <= 15) return true;
+        if(tempCounter <= 15) return true;
+        else if(queen1 != null && queen2 != null) return false;
 
         return true;
     }
 
 
     private static final int[] BLACK_PAWN_TABLE = new int[] {
-            -80, -80, -80, -80, -80, -80, -80, -80,
-            -50, -50, -50, -50, -50, -50, -50, -50,
-            -10, -10, -20, -30, -30, -20, -10, -10,
-            5,  5, 10, -15, -15, 10,  5,  -5,
-             0,   0,  0, -35, -35,  0,  0,  0,
-            -5,   5,  10,-10, -10, 10, 5,  -5,
-            -5, -10, -10, 40, 40, -10, -10, -5,
-             0,   0,   0,  0,  0,   0,   0,  0
+            -80,-80,-80,-80,-80,-80,-80,-80,
+            -50,-50,-50,-50,-50,-50,-50,-50,
+            -10,-10,-20,-30,-30,-20,-10,-10,
+             5,   5, 10,-15,-15, 10,  5, -5,
+             0,   0,  0,-35,-35,  0,  0,  0,
+            -5,   5, 10,-10,-10, 10,  5, -5,
+            -5, -10,-10, 40, 40,-10,-10, -5,
+             0,   0,  0,  0,  0,  0,  0,  0
     };
 
     private static final int[] WHITE_PAWN_TABLE = new int[] {
@@ -1099,23 +1098,23 @@ public class ChessBoard {
             5,  5, 10, 15, 15, 10,  5,  5,
             10, 10, 20, 35, 35, 20, 10, 10,
             50, 50, 50, 50, 50, 50, 50, 50,
-            80,  80,  80,  80,  80,  80,  80,  80
+            80, 80, 80, 80, 80, 80, 80, 80
     };
 
     private static final int[] BLACK_KING_TABLE = new int[] {
-            30, 40, 40, 50, 50, 40, 40, 30,
-            30, 40, 40, 50, 50, 40, 40, 30,
-            30, 40, 40, 50, 50, 40, 40, 30,
-            30, 40, 40, 50, 50, 40, 40, 30,
-            20, 30, 30, 40, 40, 30, 30, 20,
-            10, 20, 20, 20, 20, 20, 20, 10,
-            -20,  -20,   50,   50,   50,   50,  -20,  -20,
-            -20,  -25,  -45,   10,   0,  10,  -45,  -20
+             30, 40, 40, 50, 50, 40, 40, 30,
+             30, 40, 40, 50, 50, 40, 40, 30,
+             30, 40, 40, 50, 50, 40, 40, 30,
+             30, 40, 40, 50, 50, 40, 40, 30,
+             20, 30, 30, 40, 40, 30, 30, 20,
+             10, 20, 20, 20, 20, 20, 20, 10,
+            -20,-20, 50, 50, 50, 50,-20,-20,
+            -20,-25,-45, 10,  0, 10,-45,-20
     };
 
     private static final int[] WHITE_KING_TABLE = new int[] {
-            20, 25, 45,  0,  0, 10, 45, 20,
-            20, 20,  -50,  -50,  -50,  -50, 20, 20,
+            20, 25,  45,  0,  0, 10, 45, 20,
+            20, 20, -50,-50,-50,-50, 20, 20,
             -10,-20,-20,-20,-20,-20,-20,-10,
             -20,-30,-30,-40,-40,-30,-30,-20,
             -30,-40,-40,-50,-50,-40,-40,-30,
@@ -1151,8 +1150,8 @@ public class ChessBoard {
             -20, -10, -10, -5, -5, -10, -10, -20,
             -10,   0,   0,  0,  0,   5,   0, -10,
             -10,   0,   5,  5,  5,   5,   5, -10,
-            -5,   0,   5,  5,  5,   5,   0,  -5,
-            -5,   0,   5,  5,  5,   5,   0,  -5,
+            -5,    0,   5,  5,  5,   5,   0,  -5,
+            -5,    0,   5,  5,  5,   5,   0,  -5,
             -10,   5,   5,  5,  5,   5,   0, -10,
             -10,   0,   5,  0,  0,   0,   0, -10,
             -20, -10, -10, -5, -5, -10, -10, -20
@@ -1162,8 +1161,8 @@ public class ChessBoard {
             -20,-10,-10, -5, -5,-10,-10,-20,
             -10,  0,  5,  0,  0,  0,  0,-10,
             -10,  5,  5,  5,  5,  5,  0,-10,
-            0,  0,  5,  5,  5,  5,  0, -5,
-            -5,  0,  5,  5,  5,  5,  0, -5,
+             0,   0,  5,  5,  5,  5,  0, -5,
+            -5,   0,  5,  5,  5,  5,  0, -5,
             -10,  0,  5,  5,  5,  5,  0,-10,
             -10,  0,  0,  0,  0,  0,  0,-10,
             -20,-10,-10, -5, -5,-10,-10,-20,
@@ -1183,45 +1182,45 @@ public class ChessBoard {
     private static final int[] BLACK_BISHOP_TABLE = new int[] {
             20, 10, 10, 10, 10, 10, 10, 20,
             10,  0,  0,  0,  0,  0,  0, 10,
-            10,  0, -5, -10, -10, -5,  0, 10,
-            10, -5, -5, -10, -10, -5, -5, 10,
-            10,  0, -10, -10, -10, -10,  0, 10,
-            10, -10, -10, -10, -10, -10, -10, 10,
-            10, -5,  0,  0,  0,  0, -5,  10,
+            10,  0, -5,-10,-10, -5,  0, 10,
+            10, -5, -5,-10,-10, -5, -5, 10,
+            10,  0,-10,-10,-10,-10,  0, 10,
+            10,-10,-10,-10,-10,-10,-10, 10,
+            10, -5,  0,  0,  0,  0, -5, 10,
             20, 10, 30, 10, 10, 30, 10, 20
     };
 
     private static final int[] BLACK_ROOK_TABLE = new int[] {
-            -10,  -10,  -10,  -5, -5,  -10,  -10,  -10,
-            -5, -10, -10, -10, -10, -10, -10,  -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            0,  0,  0,  -5,  -5,  0,  0,  0
+            -10,-10,-10, -5, -5,-10,-10,-10,
+             -5,-10,-10,-10,-10,-10,-10, -5,
+             -5,  0,  0,  0,  0,  0,  0, -5,
+             -5,  0,  0,  0,  0,  0,  0, -5,
+             -5,  0,  0,  0,  0,  0,  0, -5,
+             -5,  0,  0,  0,  0,  0,  0, -5,
+             -5,  0,  0,  0,  0,  0,  0, -5,
+              0,  0,  0, -5, -5,  0,  0,  0
     };
 
     private static final int[] WHITE_ROOK_TABLE = new int[] {
-            0,  0,  0,  5,  5,  0,  0,  0,
+             0,  0,  0,  5,  5,  0,  0,  0,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
-            5, 10, 10, 10, 10, 10, 10,  5,
-            10,  10,  10,  10,  10,  10,  10,  10,
+             5, 10, 10, 10, 10, 10, 10,  5,
+            10, 10, 10, 10, 10, 10, 10, 10,
     };
 
     private static final int[] BLACK_KNIGHT_TABLE = new int[] {
             50, 40, 30, 30, 30, 30, 40, 50,
             40, 20,  0,  0,  0,  0, 20, 40,
-            30,  0, -10, -15, -15, -10,  0, 30,
-            30,  -5, -15, -20, -20, -15,  -5, 30,
-            30,  0, -15, -20, -20, -15,  0, 30,
-            30,  -5, -10, -15, -15, -10,  -5, 30,
-            40, -20,  0,  5,  5,  0, -20, 40,
-            50, 30,  30,  30,  30,  30,  30, 50
+            30,  0,-10,-15,-15,-10,  0, 30,
+            30, -5,-15,-20,-20,-15, -5, 30,
+            30,  0,-15,-20,-20,-15,  0, 30,
+            30, -5,-10,-15,-15,-10, -5, 30,
+            40,-20,  0,  5,  5,  0,-20, 40,
+            50, 30, 30, 30, 30, 30, 30, 50
     };
 
     private static final int[] WHITE_KNIGHT_TABLE = new int[] {
@@ -1237,11 +1236,13 @@ public class ChessBoard {
 
     private int pieceValue(Piece piece) {
         int value = 0;
-        if (piece instanceof King) value = 20000;
-        else if (piece instanceof Queen) value = 900;
-        else if (piece instanceof Rook) value = 500;
-        else if (piece instanceof Bishop || piece instanceof Knight) value = 300;
-        else if (piece instanceof Pawn) value = 100;
+        switch(piece.pieceType) {
+            case KING -> value=20000;
+            case QUEEN -> value = 900;
+            case ROOK -> value = 500;
+            case BISHOP, KNIGHT -> value = 300;
+            case PAWN -> value = 100;
+        }
         return piece.isWhite ? value : -value; // biale + / czarne -
     }
     private Piece getBestPromotionPiece(boolean isWhite) {

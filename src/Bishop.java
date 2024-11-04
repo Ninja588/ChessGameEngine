@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 public class Bishop extends Piece {
     public Bishop(boolean isWhite) {
-        super(isWhite, false);
+        super(isWhite, false, PieceType.BISHOP);
     }
 
     @Override
