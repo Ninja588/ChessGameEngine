@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Rook extends Piece {
     public Rook(boolean isWhite) {
-        super(isWhite, false, PieceType.ROOK);
+        super(isWhite, PieceType.ROOK);
     }
 
     @Override
@@ -40,12 +40,12 @@ public class Rook extends Piece {
 
                 if(pieceAtNewPos == null) {
                     // puste pole, jesli po poruszaniu sie nie odkryje krola na szacha jest git
-                    if(!board.isPinned(this, x, y) || !board.wouldExposeKing(x, y, newX, newY)) {
+                    if(!board.isPinned(this, x, y) || board.wouldExposeKing(x, y, newX, newY)) {
                         legalMoves.add(new Move(x, y, newX, newY, false));
                     }
                 } else {
                     // sprawdanie koloru figury
-                    boolean capturesPinningPiece = isOpponentPiece && board.isPinned(this, x, y) && !board.wouldExposeKing(x, y, newX, newY);
+                    boolean capturesPinningPiece = isOpponentPiece && board.isPinned(this, x, y) && board.wouldExposeKing(x, y, newX, newY);
 
                     if(isOpponentPiece && (!board.isPinned(this, x, y) || capturesPinningPiece)) {
                         // da sie zbic figure jesli nie odkryje krola na szacha albo to jest figura ktora pinuje do krola

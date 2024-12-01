@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class King extends Piece {
     public King(boolean isWhite) {
-        super(isWhite, false, PieceType.KING);
+        super(isWhite, PieceType.KING);
     }
 
     public boolean castle = false;
@@ -30,7 +30,7 @@ public class King extends Piece {
 
                 if (pieceAtNewPos == null || isOpponentPiece) {
                     // jezeli pole nie jest atakowane lub figura na nim nie jest chrononia krol moze tam wejsc
-                    if (!board.wouldExposeKing(x,y,newX,newY)) { // !board.isSquareAttacked(newX, newY, !this.isWhite) &&
+                    if (board.wouldExposeKing(x, y, newX, newY)) {
                         legalMoves.add(new Move(x, y, newX, newY, false));
                     }
                     if(!castle) {

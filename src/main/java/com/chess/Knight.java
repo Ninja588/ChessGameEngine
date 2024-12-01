@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Knight extends Piece{
     public Knight(boolean isWhite) {
-        super(isWhite, false, PieceType.KNIGHT);
+        super(isWhite, PieceType.KNIGHT);
     }
 
     @Override
@@ -27,12 +27,7 @@ public class Knight extends Piece{
                 Piece pieceAtNewPos = board.getPiece(newX, newY);
                 boolean isOpponentPiece = pieceAtNewPos != null && pieceAtNewPos.isWhite != this.isWhite;
                 if (pieceAtNewPos == null || isOpponentPiece) {
-                    boolean canMoveOrCapture = !board.isPinned(this, x, y) || !board.wouldExposeKing(x, y, newX, newY);
-                    //boolean capturesPinningPiece = isOpponentPiece && board.isPinned(this, x, y) && board.wouldExposeKing(x, y, newX, newY);
-
-//                    if (canMoveOrCapture || capturesPinningPiece) {
-//                        legalMoves.add(new Move(x, y, newX, newY, false));
-//                    }
+                    boolean canMoveOrCapture = !board.isPinned(this, x, y) || board.wouldExposeKing(x, y, newX, newY);
                     if(canMoveOrCapture) legalMoves.add(new Move(x, y, newX, newY, false));
                 }
             }

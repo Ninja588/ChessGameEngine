@@ -45,4 +45,8 @@ public class EvaluationBar extends JPanel{
     public Dimension getPreferredSize() {
         return new Dimension(30, getHeight());
     }
+
+    public double getEvaluation() {
+        return evaluation;
+    }
 }

@@ -5,7 +5,7 @@ public class Move {
     public final int startY;
     public final int endX;
     public final int endY;
-    private boolean isPromotion;
+    private final boolean isPromotion;
 
     public Move(int startX, int startY, int endX, int endY, boolean isPromotion) {
         this.startX = startX;

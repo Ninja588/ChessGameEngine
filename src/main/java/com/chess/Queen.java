@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Queen extends Piece{
     public Queen(boolean isWhite) {
-        super(isWhite, false, PieceType.QUEEN);
+        super(isWhite, PieceType.QUEEN);
     }
 
     @Override
@@ -43,13 +43,13 @@ public class Queen extends Piece{
                 Piece pieceAtNewPos = board.getPiece(newX, newY);
                 if(pieceAtNewPos == null) {
                     // puste pole, jesli po poruszaniu sie nie odkryje krola na szacha jest git
-                    if(!board.isPinned(this,x,y) || !board.wouldExposeKing(x,y,newX,newY))
+                    if(!board.isPinned(this,x,y) || board.wouldExposeKing(x, y, newX, newY))
                         legalMoves.add(new Move(x, y, newX, newY, false));
                 } else {
                     // sprawdanie koloru figury
                     if(pieceAtNewPos.isWhite != this.isWhite) {
                         // da sie zbic figure jesli nie odkryje krola na szacha albo to jest figura ktora pinuje do krola
-                        if(!board.isPinned(this,x,y) || !board.wouldExposeKing(x,y,newX,newY))
+                        if(!board.isPinned(this,x,y) || board.wouldExposeKing(x, y, newX, newY))
                             legalMoves.add(new Move(x, y, newX, newY, false));
                     }
                     break;

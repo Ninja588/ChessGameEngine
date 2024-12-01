@@ -5,12 +5,12 @@ import java.util.List;
 public abstract class Piece {
 
     public enum PieceType { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING }
-    protected boolean isWhite;
-    public boolean hasMoved;
+    protected final boolean isWhite;
+    protected boolean hasMoved;
 
-    public PieceType pieceType;
+    public final PieceType pieceType;
 
-    public Piece(boolean isWhite, boolean hasMoved, PieceType pieceType) {
+    public Piece(boolean isWhite, PieceType pieceType) {
         this.isWhite = isWhite;
         this.hasMoved = false;
         this.pieceType = pieceType;

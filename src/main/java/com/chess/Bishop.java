@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Bishop extends Piece {
     public Bishop(boolean isWhite) {
-        super(isWhite, false, PieceType.BISHOP);
+        super(isWhite, PieceType.BISHOP);
     }
 
     @Override
@@ -41,12 +41,12 @@ public class Bishop extends Piece {
 
                 if (pieceAtNewPos == null) {
                     // puste pole, jesli po poruszaniu sie nie odkryje krola na szacha jest git
-                    if (!board.isPinned(this, x, y) || !board.wouldExposeKing(x, y, newX, newY)) {
+                    if (!board.isPinned(this, x, y) || board.wouldExposeKing(x, y, newX, newY)) {
                         legalMoves.add(new Move(x, y, newX, newY, false));
                     }
                 } else {
                     // sprawdanie koloru figury
-                    boolean capturesPinningPiece = isOpponentPiece && board.isPinned(this, x, y) && !board.wouldExposeKing(x, y, newX, newY);
+                    boolean capturesPinningPiece = isOpponentPiece && board.isPinned(this, x, y) && board.wouldExposeKing(x, y, newX, newY);
 
                     if (isOpponentPiece && (!board.isPinned(this, x, y) || capturesPinningPiece)) {
                         // da sie zbic figure jesli nie odkryje krola na szacha albo to jest figura ktora pinuje do krola
