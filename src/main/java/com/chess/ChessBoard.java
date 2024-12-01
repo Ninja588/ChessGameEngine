@@ -239,16 +239,17 @@ public class ChessBoard {
                             }
                         }
                     } else {
+                        boolean bishopMoves = Math.abs(x - i) == Math.abs(y - j);
                         if(piece.pieceType == Piece.PieceType.BISHOP) {
                             // goniec ataki
-                            if(Math.abs(x - i) == Math.abs(y - j)) {
+                            if(bishopMoves) {
                                 if(isPathClear(i, j, x, y)) {
                                     return true;
                                 }
                             }
                         } else if(piece.pieceType == Piece.PieceType.QUEEN) {
                             // krolowka ataki
-                            if((x == i || y == j) || Math.abs(x - i) == Math.abs(y - j)) {
+                            if((x == i || y == j) || bishopMoves) {
                                 if(isPathClear(i, j, x, y)) {
                                     return true;
                                 }
