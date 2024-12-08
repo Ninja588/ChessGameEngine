@@ -47,11 +47,9 @@ public class Queen extends Piece{
                         legalMoves.add(new Move(x, y, newX, newY, false));
                 } else {
                     // sprawdanie koloru figury
-                    if(pieceAtNewPos.isWhite != this.isWhite) {
-                        // da sie zbic figure jesli nie odkryje krola na szacha albo to jest figura ktora pinuje do krola
-                        if(!board.isPinned(this,x,y) || board.wouldExposeKing(x, y, newX, newY))
-                            legalMoves.add(new Move(x, y, newX, newY, false));
-                    }
+                    // da sie zbic figure jesli nie odkryje krola na szacha albo to jest figura ktora pinuje do krola
+                    if (pieceAtNewPos.isWhite != this.isWhite && (!board.isPinned(this, x, y) || board.wouldExposeKing(x, y, newX, newY)))
+                        legalMoves.add(new Move(x, y, newX, newY, false));
                     break;
                 }
             }

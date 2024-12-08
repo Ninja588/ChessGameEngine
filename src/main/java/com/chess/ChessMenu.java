@@ -2,50 +2,58 @@ package com.chess;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Random;
+import java.security.SecureRandom;
+
+import static java.lang.Integer.parseInt;
 
 public class ChessMenu {
-    private static boolean playerVsAI = true;
-    protected static JFrame frame;
-    protected static JPanel mainPanel;
-    protected static CardLayout cardLayout;
-    private static int width, height;
-    private static String lastRes;
-    private static Color lightSquaresColor=null, darkSquaresColor=null;
+    private boolean playerVsAI = true;
+    protected JFrame frame;
+    protected JPanel mainPanel;
+    protected CardLayout cardLayout;
+    private int width;
+    private int height;
+    private String lastRes;
+    private Color lightSquaresColor=null;
+    private Color darkSquaresColor=null;
     private GraphicsDevice gd;
+
+    private static final String ARIAL = "Arial";
+    private static final String MAIN_MENU = "Main Menu";
+    private static final String SETTINGS = "Settings";
 
     public ChessMenu(JFrame frame, GraphicsDevice gd) {
         if(isHeadless()) {
-            ChessMenu.frame = new JFrame("Szachy");
-            ChessMenu.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            this.frame = new JFrame("Szachy");
+            this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             this.gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
             width = this.gd.getDisplayMode().getWidth();
             height = this.gd.getDisplayMode().getHeight();
-            ChessMenu.frame.setUndecorated(true);
-            ChessMenu.frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            this.frame.setUndecorated(true);
+            this.frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
             cardLayout = new CardLayout();
             mainPanel = new JPanel(cardLayout);
 
             JPanel menuPanel = createMenuPanel();
-            mainPanel.add(menuPanel, "Main Menu");
+            mainPanel.add(menuPanel, MAIN_MENU);
 
             JPanel settingsPanel = createSettingsPanel();
-            mainPanel.add(settingsPanel, "Settings");
+            mainPanel.add(settingsPanel, SETTINGS);
 
-            ChessMenu.frame.add(mainPanel);
-            ChessMenu.frame.setVisible(true);
+            this.frame.add(mainPanel);
+            this.frame.setVisible(true);
         } else {
-            ChessMenu.frame = frame;
+            this.frame = frame;
             this.gd = gd;
             cardLayout = new CardLayout();
             mainPanel = new JPanel(cardLayout);
 
             JPanel menuPanel = createMenuPanel();
-            mainPanel.add(menuPanel, "Main Menu");
+            mainPanel.add(menuPanel, MAIN_MENU);
 
             JPanel settingsPanel = createSettingsPanel();
-            mainPanel.add(settingsPanel, "Settings");
+            mainPanel.add(settingsPanel, SETTINGS);
         }
     }
 
@@ -66,7 +74,7 @@ public class ChessMenu {
         menuPanel.add(Box.createVerticalStrut(20));
 
         JButton settingsButton = createButton("Ustawienia");
-        settingsButton.addActionListener(e -> cardLayout.show(mainPanel, "Settings"));
+        settingsButton.addActionListener(e -> cardLayout.show(mainPanel, SETTINGS));
         menuPanel.add(createCenteredComponent(settingsButton));
 
         menuPanel.add(Box.createVerticalStrut(20));
@@ -97,14 +105,14 @@ public class ChessMenu {
         settingsPanel.add(Box.createVerticalGlue());
 
         JLabel label = new JLabel("Wybierz tryb:", SwingConstants.CENTER);
-        label.setFont(new Font("Arial", Font.BOLD, 20));
+        label.setFont(new Font(ARIAL, Font.BOLD, 20));
         label.setForeground(Color.WHITE);
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
         settingsPanel.add(createCenteredComponent(label));
 
         String[] gameModes = {"Gracz vs AI", "Gracz vs Gracz"};
         JComboBox<String> modeComboBox = new JComboBox<>(gameModes);
-        modeComboBox.setFont(new Font("Arial", Font.PLAIN, 18));
+        modeComboBox.setFont(new Font(ARIAL, Font.PLAIN, 18));
         modeComboBox.setMaximumSize(new Dimension(200,30));
         modeComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
         modeComboBox.addActionListener(e->playerVsAI = "Gracz vs AI".equals(modeComboBox.getSelectedItem()));
@@ -120,7 +128,7 @@ public class ChessMenu {
         String[] resolutions = {nativeRes, "800x600", "1366x768", "1600x900", "1920x1080", "2560x1440"};
 
         JComboBox<String> resolutionComboBox = new JComboBox<>(resolutions);
-        resolutionComboBox.setFont(new Font("Arial", Font.PLAIN, 18));
+        resolutionComboBox.setFont(new Font(ARIAL, Font.PLAIN, 18));
         resolutionComboBox.setMaximumSize(new Dimension(200,30));
         resolutionComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
         resolutionComboBox.addActionListener(e -> {
@@ -157,6 +165,8 @@ public class ChessMenu {
                         lastRes = width+"x"+height;
                         frame.setSize(width, height);
                         break;
+                    default:
+                        break;
                 }
             } else resolutionComboBox.setSelectedIndex(0);
         });
@@ -165,7 +175,7 @@ public class ChessMenu {
 
         settingsPanel.add(Box.createVerticalStrut(20));
 
-        fullscreenCheckbox.setFont(new Font("Arial", Font.PLAIN, 18));
+        fullscreenCheckbox.setFont(new Font(ARIAL, Font.PLAIN, 18));
         fullscreenCheckbox.setMaximumSize(new Dimension(200, 30));
         fullscreenCheckbox.setAlignmentX(Component.CENTER_ALIGNMENT);
         fullscreenCheckbox.setOpaque(false);
@@ -173,7 +183,7 @@ public class ChessMenu {
             if(fullscreenCheckbox.isSelected()) {
                 frame.dispose();
                 frame.setUndecorated(true);
-                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                frame.setExtendedState(Frame.MAXIMIZED_BOTH);
                 frame.setVisible(true);
                 if(isHeadless()) {
                     gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
@@ -185,7 +195,7 @@ public class ChessMenu {
                 frame.dispose();
                 frame.setUndecorated(false);
                 frame.setSize(width, height);
-                frame.setExtendedState(JFrame.NORMAL);
+                frame.setExtendedState(Frame.NORMAL);
                 frame.setVisible(true);
                 for(int i=0;i<resolutions.length;i++) {
                     if(resolutions[i].equals(lastRes)) {
@@ -200,7 +210,7 @@ public class ChessMenu {
         settingsPanel.add(Box.createVerticalStrut(20));
 
         JButton lightSquareColorButton = new JButton("Kolor jasnych pól");
-        lightSquareColorButton.setFont(new Font("Arial", Font.PLAIN, 18));
+        lightSquareColorButton.setFont(new Font(ARIAL, Font.PLAIN, 18));
         lightSquareColorButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         lightSquareColorButton.addActionListener(e -> {
             Color chosenColor = JColorChooser.showDialog(null, "Kolor jasnych pól", Color.WHITE);
@@ -213,7 +223,7 @@ public class ChessMenu {
         settingsPanel.add(Box.createVerticalStrut(20));
 
         JButton darkSquareColorButton = new JButton("Kolor ciemnych pól");
-        darkSquareColorButton.setFont(new Font("Arial", Font.PLAIN, 18));
+        darkSquareColorButton.setFont(new Font(ARIAL, Font.PLAIN, 18));
         darkSquareColorButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         darkSquareColorButton.addActionListener(e -> {
             Color chosenColor = JColorChooser.showDialog(null, "Kolor ciemnych pól", Color.WHITE);
@@ -226,7 +236,7 @@ public class ChessMenu {
         settingsPanel.add(Box.createVerticalStrut(20));
 
         JButton resetSquareColorButton = new JButton("Reset kolorów pól do domyślnych");
-        resetSquareColorButton.setFont(new Font("Arial", Font.PLAIN, 18));
+        resetSquareColorButton.setFont(new Font(ARIAL, Font.PLAIN, 18));
         resetSquareColorButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         resetSquareColorButton.addActionListener(e -> {
             darkSquaresColor = null;
@@ -237,13 +247,13 @@ public class ChessMenu {
         settingsPanel.add(Box.createVerticalStrut(20));
 
         JButton backButton = createButton("Powrót");
-        backButton.addActionListener(e->cardLayout.show(mainPanel, "Main Menu"));
+        backButton.addActionListener(e->cardLayout.show(mainPanel, MAIN_MENU));
         settingsPanel.add(createCenteredComponent(backButton));
 
         settingsPanel.add(Box.createVerticalGlue());
 
         JLabel authors = new JLabel("<html>Autorzy:<br/>Kamil Derszniak<br/>Julia Danilczuk</html>", SwingConstants.CENTER);
-        authors.setFont(new Font("Arial", Font.BOLD, 24));
+        authors.setFont(new Font(ARIAL, Font.BOLD, 24));
         authors.setForeground(Color.WHITE);
         authors.setBorder(BorderFactory.createEmptyBorder(10, 0, 30, 0));
         settingsPanel.add(authors);
@@ -253,7 +263,7 @@ public class ChessMenu {
 
     private static JButton createButton(String text) {
         JButton button = new JButton(text);
-        button.setFont(new Font("Arial", Font.BOLD, 20));
+        button.setFont(new Font(ARIAL, Font.BOLD, 20));
         button.setForeground(Color.WHITE);
         button.setBackground(new Color(60, 63, 65));
         button.setOpaque(true);
@@ -262,16 +272,16 @@ public class ChessMenu {
         return button;
     }
 
-    private static void startGame() {
-        Random rand = new Random();
+    private void startGame() {
+        SecureRandom rand = new SecureRandom();
         ChessGameGUI gameGUI  = new ChessGameGUI(playerVsAI, mainPanel, cardLayout, lightSquaresColor, darkSquaresColor, rand.nextBoolean());
 
         mainPanel.add(gameGUI.getGamePanel(), "Game");
         cardLayout.show(mainPanel, "Game");
     }
 
-    static class BackgroundPanel extends JPanel {
-        private final Image backgroundImage;
+    public static class BackgroundPanel extends JPanel {
+        protected final Image backgroundImage;
 
         public BackgroundPanel(String path) {
             backgroundImage = new ImageIcon(path).getImage();

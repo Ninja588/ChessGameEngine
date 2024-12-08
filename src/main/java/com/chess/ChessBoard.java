@@ -1,8 +1,8 @@
 package com.chess;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Stack;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +12,7 @@ public class ChessBoard {
     private Piece[][] board;
     private PromotionListener promotionListener;
     private Map<String, Integer> boardStates = new HashMap<>();
+    ChessGameGUI gui;
 
     public String generateBoardState() {
         StringBuilder boardState = new StringBuilder();
@@ -50,7 +51,8 @@ public class ChessBoard {
         return false;
     }
 
-    public ChessBoard() {
+    public ChessBoard(ChessGameGUI gui) {
+        this.gui = gui;
         resetBoard();
     }
 
@@ -197,7 +199,6 @@ public class ChessBoard {
                     List<Move> legalMoves = piece.getLegalMoves(this, i, j);
                     for(Move move : legalMoves) {
                         if(move.endX == kingX && move.endY == kingY) {
-                            //if((piece.pieceType == Piece.PieceType.PAWN && (move.endX + 1 == kingX || move.endX - 1 == kingX))) continue;
                             if(!checkSound) {
                                 SoundManager.playSound("move-check.wav");
                                 checkSound = true;
@@ -233,26 +234,20 @@ public class ChessBoard {
                         }
                     } else if(piece.pieceType == Piece.PieceType.ROOK) {
                         // rook ataki
-                        if(x == i || y == j) {
-                            if(isPathClear(i, j, x, y)) {
-                                return true;
-                            }
+                        if ((x == i || y == j) && isPathClear(i, j, x, y)) {
+                            return true;
                         }
                     } else {
                         boolean bishopMoves = Math.abs(x - i) == Math.abs(y - j);
                         if(piece.pieceType == Piece.PieceType.BISHOP) {
                             // goniec ataki
-                            if(bishopMoves) {
-                                if(isPathClear(i, j, x, y)) {
-                                    return true;
-                                }
+                            if (bishopMoves && isPathClear(i, j, x, y)) {
+                                return true;
                             }
                         } else if(piece.pieceType == Piece.PieceType.QUEEN) {
                             // krolowka ataki
-                            if((x == i || y == j) || bishopMoves) {
-                                if(isPathClear(i, j, x, y)) {
-                                    return true;
-                                }
+                            if (((x == i || y == j) || bishopMoves) && isPathClear(i, j, x, y)) {
+                                return true;
                             }
                         } else if(piece.pieceType == Piece.PieceType.KING) {
                             // krol ataki
@@ -436,9 +431,7 @@ public class ChessBoard {
     public boolean ok; // zmienna czy ruch jest git
     public boolean enpassantWhite;
     public boolean enpassantBlack;
-    // public boolean castleBlackQueen = false, castleBlackKing = false, castleWhiteKing = false, castleWhiteQueen = false;
     public boolean promoted = false;
-    // --Commented out by Inspection (01.12.2024 19:50):public boolean AIpromoted = false;
 
     public void movePiece(int startX, int startY, int endX, int endY, boolean isAiTurn) {
         if(isCheckmate(true) || isCheckmate(false) || isStalemate(true) || isStalemate(false)) {
@@ -450,7 +443,6 @@ public class ChessBoard {
         enpassantBlack = false;
         ok = false;
         promoted = false;
-        //AIpromoted = false;
 
         if(piece != null && whiteTurn == piece.isWhite) {
             // sprawdzanie czy na danym polu jest figura tego samego koloru
@@ -473,8 +465,9 @@ public class ChessBoard {
 
                             piece.setMoved();
                             rook.setMoved();
-
-                            ChessGameGUI.updateCastlingUI(startX, startY, endX, endY, endX, 7, endX, 5, piece.isWhite);
+                            Move kingMove = new Move(startX,startY,endX,endY,false);
+                            Move rookMove = new Move(endX, 7, endX, 5, false);
+                            gui.updateCastlingUI(kingMove, rookMove, piece.isWhite);
                             SoundManager.playSound("castle.wav");
                             toggleTurn();
                             recordBoardState(isWhiteTurn());
@@ -491,7 +484,9 @@ public class ChessBoard {
                             piece.setMoved();
                             rook.setMoved();
 
-                            ChessGameGUI.updateCastlingUI(startX, startY, endX, endY, endX, 0, endX, 3, piece.isWhite);
+                            Move kingMove = new Move(startX,startY,endX,endY,false);
+                            Move rookMove = new Move(endX, 0, endX, 3, false);
+                            gui.updateCastlingUI(kingMove, rookMove, piece.isWhite);
                             SoundManager.playSound("castle.wav");
                             toggleTurn();
                             recordBoardState(isWhiteTurn());
@@ -529,24 +524,18 @@ public class ChessBoard {
                         }
 
                         // promo piona na inne figury
-                        if((endX == 7 || endX == 0)) {
-                            if(promotionListener != null && !isAiTurn) {
-                                promotionListener.onPromotion(endX, endY, piece.isWhite);
-                                SoundManager.playSound("promote.wav");
-                                promoted = true;
-                            }
+                        if ((endX == 7 || endX == 0) && promotionListener != null && !isAiTurn) {
+                            promotionListener.onPromotion(endX, endY, piece.isWhite);
+                            SoundManager.playSound("promote.wav");
+                            promoted = true;
                         }
                     }
                     SoundManager.playSound("move.wav");
                     recordBoardState(isWhiteTurn());
                     toggleTurn();
                 } else {
-                    System.out.println("zly ruch");
                     ok = false;
                 }
-            } else {
-                System.out.println("nie da sie zbic figury tego samego koloru");
-                ok = false;
             }
         }
     }
@@ -658,20 +647,6 @@ public class ChessBoard {
         return !inCheck;
     }
 
-    public void printBoard() {
-        for(int i = 0; i < 8; i++) {
-            for(int j = 0; j < 8; j++) {
-                Piece piece = board[i][j];
-                if(piece != null) {
-                    System.out.print(piece.getSymbol() + " ");
-                } else {
-                    System.out.print(". ");
-                }
-            }
-            System.out.println();
-        }
-    }
-
     // do ai potrzebne rzeczy
     public List<Move> getAllLegalMoves(boolean isWhite) {
         List<Move> allLegalMoves = new ArrayList<>();
@@ -702,28 +677,22 @@ public class ChessBoard {
                 int boardValue = minimax(3, Integer.MIN_VALUE, Integer.MAX_VALUE,!isWhite);
                 undoMove(move);
                 castleCheck = (move.endX == 7 || move.endX == 0) && (move.endY == 2 || move.endY == 6);
-                if(isWhite && boardValue > bestValue) {
+                if(isWhite && boardValue > bestValue || !isWhite && boardValue < bestValue) {
                     bestValue = boardValue;
                     bestMove = move;
                     tempMove = move;
 
-                } else if(!isWhite && boardValue < bestValue) {
-                    bestValue = boardValue;
-                    bestMove = move;
-                    tempMove = move;
                 }
 
             }
-            if(castleCheck) {
-                if(tempMove != null) {
-                    Piece tempPieceKing = getPiece(tempMove.startX, tempMove.startY);
-                    if(tempPieceKing != null && tempPieceKing.pieceType == Piece.PieceType.KING && !((King) tempPieceKing).castle && !tempPieceKing.hasMoved) {
-                        castleON = true;
-                    }
+            if(castleCheck && tempMove != null) {
+                Piece tempPieceKing = getPiece(tempMove.startX, tempMove.startY);
+                if(tempPieceKing != null && tempPieceKing.pieceType == Piece.PieceType.KING && !((King) tempPieceKing).castle && !tempPieceKing.hasMoved) {
+                    castleON = true;
                 }
             }
 
-            Random rand = new Random();
+            SecureRandom rand = new SecureRandom();
             Move move = legalMoves.get(rand.nextInt(legalMoves.size()));
             if(bestMove == null) bestMove = move;
             Piece tempPiece = getPiece(bestMove.startX, bestMove.startY);
@@ -740,15 +709,12 @@ public class ChessBoard {
                 if(tempPiece.pieceType == Piece.PieceType.PAWN && (bestMove.endX == 7 || bestMove.endX == 0)) {
                     Piece promotedPiece = getBestPromotionPiece(isWhite);
                     board[bestMove.endX][bestMove.endY] = promotedPiece;
-                    ChessGameGUI.updateBoard(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, "Queen", isWhite);
+                    gui.updateBoard(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, "Queen", isWhite);
                     SoundManager.playSound("promote.wav");
-                    //AIpromoted = true;
                 } else if(tempPiece.pieceType == Piece.PieceType.KING && (!((King) tempPiece).castle && (bestMove.endY == 2 &&
-                        (bestMove.endX == 0 || bestMove.endX == 7)) || (bestMove.endY == 6 && (bestMove.endX == 0 || bestMove.endX == 7))) && castleON) {
-                    System.out.println("Nie trzeba nic robic tu");
-                }
+                        (bestMove.endX == 0 || bestMove.endX == 7)) || (bestMove.endY == 6 && (bestMove.endX == 0 || bestMove.endX == 7))) && castleON);
                 else
-                    ChessGameGUI.updateBoard(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, tempName, isWhite);
+                    gui.updateBoard(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, tempName, isWhite);
             }
         }
     }
@@ -818,9 +784,19 @@ public class ChessBoard {
                             score += piece.isWhite ? WHITE_QUEEN_TABLE[index] : -BLACK_QUEEN_TABLE[index];
                             break;
                         case KING:
-                            score += piece.isWhite
-                                    ? (isEndGame ? WHITE_KING_ENDGAME_TABLE[index] : WHITE_KING_TABLE[index])
-                                    : (isEndGame ? BLACK_KING_ENDGAME_TABLE[index] : BLACK_KING_TABLE[index]);
+                            if (piece.isWhite) {
+                                if (isEndGame) {
+                                    score += WHITE_KING_ENDGAME_TABLE[index];
+                                } else {
+                                    score += WHITE_KING_TABLE[index];
+                                }
+                            } else {
+                                if (isEndGame) {
+                                    score += BLACK_KING_ENDGAME_TABLE[index];
+                                } else {
+                                    score += BLACK_KING_TABLE[index];
+                                }
+                            }
                             break;
                     }
                 }
@@ -849,7 +825,6 @@ public class ChessBoard {
         if(tempCounter <= 15) return true;
         else return queen1 == null && queen2 == null;
     }
-
 
     private static final int[] BLACK_PAWN_TABLE = new int[] {
             -80,-80,-80,-80,-80,-80,-80,-80,

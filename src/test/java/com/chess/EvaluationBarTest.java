@@ -37,6 +37,8 @@ class EvaluationBarTest {
         evaluationBar.setEvaluation(0.75);
         evaluationBar.paintComponent(g2d);
 
+        assertEquals(0.75,evaluationBar.getEvaluation());
+
         g2d.dispose();
     }
 }

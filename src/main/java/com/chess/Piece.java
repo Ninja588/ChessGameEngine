@@ -10,7 +10,7 @@ public abstract class Piece {
 
     public final PieceType pieceType;
 
-    public Piece(boolean isWhite, PieceType pieceType) {
+    protected Piece(boolean isWhite, PieceType pieceType) {
         this.isWhite = isWhite;
         this.hasMoved = false;
         this.pieceType = pieceType;

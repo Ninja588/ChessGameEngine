@@ -8,46 +8,60 @@ import java.util.List;
 import java.util.Objects;
 
 public class ChessGameGUI implements ChessBoard.PromotionListener {
-    protected static final JButton[][] boardSquares = new JButton[8][8];
-    private static final JPanel boardPanel = new JPanel(new GridLayout(8, 8));
-    private static JButton selectedSquare = null;
-    private static int selectedX = -1;
-    private static int selectedY = -1;
-    protected static final ChessBoard chessBoard = new ChessBoard();
+    protected final JButton[][] boardSquares = new JButton[8][8];
+    private JButton selectedSquare = null;
+    private int selectedX = -1;
+    private int selectedY = -1;
+    protected final ChessBoard chessBoard = new ChessBoard(this);
     private final Timer gameCheckTimer;
     private final Timer moveTimer;
-    protected static boolean playerIsWhite;
-    private static boolean AIenabled;
+    protected boolean playerIsWhite;
+    private boolean aiEnabled;
 
-    private static JPanel mainPanel;
-    private static CardLayout cardLayout;
+    private JPanel mainPanel;
+    private CardLayout cardLayout;
 
-    private static Color lightSquaresColor, darkSquaresColor;
+    private Color lightSquaresColor;
+    private Color darkSquaresColor;
 
     private final EvaluationBar evaluationBar;
 
-    public ChessGameGUI(boolean AIenabled, JPanel mainPanel, CardLayout cardLayout, Color lightSquaresColor, Color darkSquaresColor, boolean playerIsWhite) {
-        ChessGameGUI.cardLayout = cardLayout;
-        ChessGameGUI.mainPanel = mainPanel;
-        ChessGameGUI.lightSquaresColor = lightSquaresColor;
-        ChessGameGUI.darkSquaresColor = darkSquaresColor;
+    private static final JPanel boardPanel = new JPanel(new GridLayout(8, 8));
+    private static final JPanel labeledBoardPanel = new JPanel(new BorderLayout());
+    private static final String WHITE = "white";
+    private static final String BLACK = "black";
+    private static final String KNIGHT = "Knight";
+    private static final String BISHOP = "Bishop";
+    private static final String QUEEN = "Queen";
+    private static final String KROLOWKA = "Krolowka";
+    private static final String PATH = "pieces/";
+    private static final String ARIAL = "Arial";
+    private static final String GAME_END = "game-end.wav";
+
+    public ChessGameGUI(boolean aiEnabled, JPanel mainPanel, CardLayout cardLayout, Color lightSquaresColor, Color darkSquaresColor, boolean playerIsWhite) {
+        this.cardLayout = cardLayout;
+        this.mainPanel = mainPanel;
+        this.lightSquaresColor = lightSquaresColor;
+        this.darkSquaresColor = darkSquaresColor;
 
         chessBoard.setPromotionListener(this);
         chessBoard.resetBoard();
 
-        ChessGameGUI.playerIsWhite = playerIsWhite;
+        this.playerIsWhite = playerIsWhite;
 
         resetGUIBoard();
         initializeBoard();
 
         evaluationBar = new EvaluationBar();
 
-        ChessGameGUI.AIenabled = AIenabled;
+        this.aiEnabled = aiEnabled;
 
         flipBoard();
 
         gameCheckTimer = new Timer(100, e -> {
-            checkGameConditions();
+            if(!GraphicsEnvironment.isHeadless()) {
+                checkGameConditions();
+            }
             updateEvaluation();
         });
         gameCheckTimer.start();
@@ -55,7 +69,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         moveTimer = new Timer(150, e -> showLegalMoves());
         moveTimer.start();
 
-        if(!playerIsWhite && AIenabled) chessBoard.makeAIMove(true);
+        if(!playerIsWhite && aiEnabled) chessBoard.makeAIMove(true);
 
         SwingUtilities.invokeLater(() -> {
             for(int i = 0; i < 8; i++) {
@@ -79,7 +93,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
 
     private static JButton createButton() {
         JButton button = new JButton("Powrót");
-        button.setFont(new Font("Arial", Font.BOLD, 20));
+        button.setFont(new Font(ARIAL, Font.BOLD, 20));
         button.setForeground(Color.WHITE);
         button.setBackground(new Color(60, 63, 65));
         button.setOpaque(true);
@@ -118,16 +132,19 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         boardPanel.removeAll();
         boardPanel.revalidate();
         boardPanel.repaint();
+
+        labeledBoardPanel.removeAll();
+        labeledBoardPanel.revalidate();
+        labeledBoardPanel.repaint();
     }
 
-    static final JPanel labeledBoardPanel = new JPanel(new BorderLayout());
-    private static void initializeBoard() {
+    private void initializeBoard() {
         // etykiety A,B,C... 1,2,3...
         JPanel topLabels = new JPanel(new GridLayout(1, 9));
         if(playerIsWhite) {
             for(char c = 'A'; c <= 'H'; c++) {
                 JLabel label = new JLabel(String.valueOf(c), SwingConstants.CENTER);
-                label.setFont(new Font("Arial", Font.BOLD, 15));
+                label.setFont(new Font(ARIAL, Font.BOLD, 15));
                 topLabels.setBackground(new Color(255, 249, 192, 255));
                 topLabels.add(label);
             }
@@ -136,7 +153,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
             JPanel sideLabels = new JPanel(new GridLayout(8, 1));
             for(int i = 8; i >= 1; i--) {
                 JLabel label = new JLabel(String.valueOf(i), SwingConstants.CENTER);
-                label.setFont(new Font("Arial", Font.BOLD, 15));
+                label.setFont(new Font(ARIAL, Font.BOLD, 15));
                 label.setPreferredSize(new Dimension(18, 10));
                 sideLabels.setBackground(new Color(255, 249, 192, 255));
                 sideLabels.add(label);
@@ -145,7 +162,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         } else {
             for(char c = 'H'; c >= 'A'; c--) {
                 JLabel label = new JLabel(String.valueOf(c), SwingConstants.CENTER);
-                label.setFont(new Font("Arial", Font.BOLD, 15));
+                label.setFont(new Font(ARIAL, Font.BOLD, 15));
                 topLabels.setBackground(new Color(255, 249, 192, 255));
                 topLabels.add(label);
             }
@@ -154,7 +171,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
             JPanel sideLabels = new JPanel(new GridLayout(8, 1));
             for(int i = 1; i <= 8; i++) {
                 JLabel label = new JLabel(String.valueOf(i), SwingConstants.CENTER);
-                label.setFont(new Font("Arial", Font.BOLD, 15));
+                label.setFont(new Font(ARIAL, Font.BOLD, 15));
                 label.setPreferredSize(new Dimension(18, 10));
                 sideLabels.setBackground(new Color(255, 249, 192, 255));
                 sideLabels.add(label);
@@ -169,7 +186,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
                 JButton square = new JButton();
-                square.addActionListener(ChessGameGUI::handleMove);
+                square.addActionListener(this::handleMove);
                 square.setFocusPainted(false);
                 if((i + j) % 2 == 0) {
                     square.setBackground(Objects.requireNonNullElseGet(darkSquaresColor, () -> new Color(118, 150, 86)));
@@ -186,41 +203,42 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         labeledBoardPanel.add(boardPanel, BorderLayout.CENTER);
     }
 
-    private static void addPiece(JButton square, int i, int j) {
-        String color = (i < 2) ? "white" : "black";
+    private void addPiece(JButton square, int i, int j) {
+        String color = (i < 2) ? WHITE : BLACK;
         String pieceName = "";
 
         if(i == 0 || i == 7) {
             if(j == 0 || j == 7) pieceName = "Rook";
-            if(j == 1 || j == 6) pieceName = "Knight";
-            if(j == 2 || j == 5) pieceName = "Bishop";
-            if(j == 3) pieceName = "Queen";
+            if(j == 1 || j == 6) pieceName = KNIGHT;
+            if(j == 2 || j == 5) pieceName = BISHOP;
+            if(j == 3) pieceName = QUEEN;
             if(j == 4) pieceName = "King";
         } else if(i == 1 || i == 6) {
             pieceName = "Pawn";
         }
 
         if(!pieceName.isEmpty()) {
-            square.setIcon(new ImageIcon("pieces/" + color + pieceName + ".png"));
+            square.setIcon(new ImageIcon(PATH + color + pieceName + ".png"));
         }
     }
 
-    public static int tempX, tempY;
-    public static String tempS;
-    public static boolean tempIsWhite;
-    public static boolean player = true;
+    public int tempX;
+    public int tempY;
+    public String tempS;
+    public boolean tempIsWhite;
+    public boolean player;
 
     private void checkGameConditions() {
         if(chessBoard.isCheckmate(true)) {
-            SoundManager.playSound("game-end.wav");
+            SoundManager.playSound(GAME_END);
             JOptionPane.showMessageDialog(boardPanel, "Mat! Czarne wygrywaja!");
             returnToMenu();
         } else if(chessBoard.isCheckmate(false)) {
-            SoundManager.playSound("game-end.wav");
+            SoundManager.playSound(GAME_END);
             JOptionPane.showMessageDialog(boardPanel, "Mat! Biale wygrywaja!");
             returnToMenu();
         } else if(chessBoard.isStalemate(true) || chessBoard.isStalemate(false)) {
-            SoundManager.playSound("game-end.wav");
+            SoundManager.playSound(GAME_END);
             JOptionPane.showMessageDialog(boardPanel, "Remis!");
             returnToMenu();
         }
@@ -233,24 +251,24 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         cardLayout.show(mainPanel, "Main Menu");
     }
 
-    protected static void showLegalMoves() {
+    protected void showLegalMoves() {
         if(selectedX!=-1 && selectedY!=-1) {
             Piece selectedPiece = chessBoard.getPiece(selectedX, selectedY);
             String tempName;
 
-            if(selectedPiece != null && chessBoard.getPiece(selectedX, selectedY).isWhite == playerIsWhite || (selectedPiece != null && !AIenabled)) {
+            if(selectedPiece != null && chessBoard.getPiece(selectedX, selectedY).isWhite == playerIsWhite || (selectedPiece != null && !aiEnabled)) {
                 List<Move> pieceLegalMoves = selectedPiece.getLegalMoves(chessBoard, selectedX, selectedY);
                 for(Move move : pieceLegalMoves) {
                     if(chessBoard.getPiece(move.endX, move.endY) != null) {
                         tempName = switch (chessBoard.getPiece(move.endX, move.endY).pieceType) {
                             case PAWN -> "Pawn";
-                            case KNIGHT -> "Knight";
+                            case KNIGHT -> KNIGHT;
                             case KING -> "King";
                             case ROOK -> "Rook";
-                            case QUEEN -> "Queen";
-                            case BISHOP -> "Bishop";
+                            case QUEEN -> QUEEN;
+                            case BISHOP -> BISHOP;
                         };
-                        boardSquares[move.endX][move.endY].setIcon(new ImageIcon("squareTexture/" + (chessBoard.getPiece(move.endX, move.endY).isWhite ? "white" : "black") + tempName + "Attacked.png"));
+                        boardSquares[move.endX][move.endY].setIcon(new ImageIcon("squareTexture/" + (chessBoard.getPiece(move.endX, move.endY).isWhite ? WHITE : BLACK) + tempName + "Attacked.png"));
                         continue;
                     }
                     boardSquares[move.endX][move.endY].setIcon(new ImageIcon("squareTexture/squareMove.png"));
@@ -259,7 +277,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         }
     }
 
-    private static void handleMove(ActionEvent e) {
+    private void handleMove(ActionEvent e) {
         JButton clickedSquare = (JButton) e.getSource();
 
         if(selectedSquare == null) {
@@ -303,29 +321,24 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
 
                     if(chessBoard.promoted) {
                         boardSquares[tempX][tempY].setIcon(null);
-                        boardSquares[tempX][tempY].setIcon(new ImageIcon("pieces/" + (tempIsWhite ? "white" : "black") + tempS + ".png"));
+                        boardSquares[tempX][tempY].setIcon(new ImageIcon(PATH + (tempIsWhite ? WHITE : BLACK) + tempS + ".png"));
                     }
                 }
                 for(Move move : pieceLegalMoves) {
-                    if(chessBoard.getPiece(move.endX, move.endY) == selectedPiece) continue;
                     if(chessBoard.getPiece(move.endX, move.endY) != null) {
                         String tempName = switch (chessBoard.getPiece(move.endX, move.endY).pieceType) {
                             case PAWN -> "Pawn";
-                            case KNIGHT -> "Knight";
+                            case KNIGHT -> KNIGHT;
                             case KING -> "King";
                             case ROOK -> "Rook";
-                            case QUEEN -> "Queen";
-                            case BISHOP -> "Bishop";
+                            case QUEEN -> QUEEN;
+                            case BISHOP -> BISHOP;
                         };
-                        boardSquares[move.endX][move.endY].setIcon(new ImageIcon("pieces/" + (chessBoard.getPiece(move.endX, move.endY).isWhite ? "white" : "black") + tempName + ".png"));
+                        boardSquares[move.endX][move.endY].setIcon(new ImageIcon(PATH + (chessBoard.getPiece(move.endX, move.endY).isWhite ? WHITE : BLACK) + tempName + ".png"));
                         continue;
                     }
                     boardSquares[move.endX][move.endY].setIcon(null);
                 }
-
-                //chessBoard.printBoard();
-            } else {
-                System.out.println("Brak wybranej figury");
             }
 
             selectedSquare = null;
@@ -334,43 +347,33 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
             player = false;
         }
 
-        try {
-            Thread.sleep(100);
-        } catch(InterruptedException ex) {
-            throw new RuntimeException(ex);
-        }
-
-        if(!chessBoard.isWhiteTurn() && !player && playerIsWhite && AIenabled) { // czarny ai
+        if(!chessBoard.isWhiteTurn() && !player && playerIsWhite && aiEnabled) { // czarny ai
             chessBoard.makeAIMove(false);
             player = true;
-            //chessBoard.printBoard();
-        } else if(chessBoard.isWhiteTurn() && !player && !playerIsWhite && AIenabled) { // bialy ai
+        } else if(chessBoard.isWhiteTurn() && !player && !playerIsWhite && aiEnabled) { // bialy ai
             chessBoard.makeAIMove(true);
             player = true;
-            //chessBoard.printBoard();
         }
     }
 
-    public static void updateBoard(int x, int y, int endX, int endY, String name, boolean isWhite) {
+    public void updateBoard(int x, int y, int endX, int endY, String name, boolean isWhite) {
         boardSquares[x][y].setIcon(null);
-        boardSquares[endX][endY].setIcon(new ImageIcon("pieces/" + (isWhite ? "white" : "black") + name + ".png"));
+        boardSquares[endX][endY].setIcon(new ImageIcon(PATH + (isWhite ? WHITE : BLACK) + name + ".png"));
         boardPanel.revalidate();
         boardPanel.repaint();
     }
 
-    public static void updateCastlingUI(int kingStartX, int kingStartY, int kingEndX, int kingEndY,
-                                        int rookStartX, int rookStartY, int rookEndX, int rookEndY,
-                                        boolean isWhite) {
-        boardSquares[kingEndX][kingEndY].setIcon(new ImageIcon("pieces/" + (isWhite ? "white" : "black") + "King.png"));
-        boardSquares[rookEndX][rookEndY].setIcon(new ImageIcon("pieces/" + (isWhite ? "white" : "black") + "Rook.png"));
-        boardSquares[kingStartX][kingStartY].setIcon(null);
-        boardSquares[rookStartX][rookStartY].setIcon(null);
+    public void updateCastlingUI(Move kingMove, Move rookMove, boolean isWhite) {
+        boardSquares[kingMove.endX][kingMove.endY].setIcon(new ImageIcon(PATH + (isWhite ? WHITE : BLACK) + "King.png"));
+        boardSquares[rookMove.endX][rookMove.endY].setIcon(new ImageIcon(PATH + (isWhite ? WHITE : BLACK) + "Rook.png"));
+        boardSquares[kingMove.startX][kingMove.startY].setIcon(null);
+        boardSquares[rookMove.startX][rookMove.startY].setIcon(null);
 
         boardPanel.revalidate();
         boardPanel.repaint();
     }
 
-    public static void flipBoard() {
+    public void flipBoard() {
         boardPanel.removeAll();
 
         if(playerIsWhite) {
@@ -393,19 +396,20 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
 
     @Override
     public void onPromotion(int x, int y, boolean isWhite) {
-        String[] options = {"Krolowka", "Wieza", "Goniec", "Skoczek"};
+        String[] options = {KROLOWKA, "Wieza", "Goniec", "Skoczek"};
         String choice = (String) JOptionPane.showInputDialog(null, "Wybierz figure:", "Promocja piona",
                 JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 
-        if(choice == null) choice = "Krolowka";
+        if(choice == null) choice = KROLOWKA;
 
         Piece promotedPiece;
         tempX = x;
         tempY = y;
         switch(choice) {
-            case "Krolowka":
+            default:
+            case KROLOWKA:
                 promotedPiece = new Queen(isWhite);
-                tempS = "Queen";
+                tempS = QUEEN;
                 tempIsWhite = isWhite;
                 chessBoard.setPiece(x, y, promotedPiece);
                 break;
@@ -417,13 +421,13 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
                 break;
             case "Goniec":
                 promotedPiece = new Bishop(isWhite);
-                tempS = "Bishop";
+                tempS = BISHOP;
                 tempIsWhite = isWhite;
                 chessBoard.setPiece(x, y, promotedPiece);
                 break;
             case "Skoczek":
                 promotedPiece = new Knight(isWhite);
-                tempS = "Knight";
+                tempS = KNIGHT;
                 tempIsWhite = isWhite;
                 chessBoard.setPiece(x, y, promotedPiece);
                 break;

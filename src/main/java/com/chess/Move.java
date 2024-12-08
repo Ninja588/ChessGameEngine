@@ -1,5 +1,7 @@
 package com.chess;
 
+import java.util.Objects;
+
 public class Move {
     public final int startX;
     public final int startY;
@@ -42,4 +44,8 @@ public class Move {
                 this.endX == move.endX && this.endY == move.endY;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(startX, startY, endX, endY, isPromotion);
+    }
 }

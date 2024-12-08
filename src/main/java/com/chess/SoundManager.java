@@ -9,9 +9,13 @@ import java.util.logging.Logger;
 
 public class SoundManager {
     private static final Logger logger = Logger.getLogger(SoundManager.class.getName());
+    private SoundManager() {
+        logger.log(Level.WARNING, "Utility class");
+        throw new IllegalStateException("Utility class");
+    }
     public static void playSound(String soundFileName) {
         try {
-            if (System.getenv("CI") != null) {
+            if(System.getenv("CI") != null) {
                 return;
             }
             File soundFile = new File("sounds/" + soundFileName);
@@ -24,11 +28,11 @@ public class SoundManager {
             clip.open(audioStream);
             clip.start();
         } catch(UnsupportedAudioFileException e) {
-            logger.log(Level.SEVERE, "Niewspierany plik audio: " + soundFileName, e);
+            logger.log(Level.SEVERE, e, () -> "Niewspierany plik audio: " + soundFileName);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Blad IO podczas puszczania dzwieku: " + soundFileName, e);
+            logger.log(Level.SEVERE, e, () -> "Blad IO podczas puszczania dzwieku: " + soundFileName);
         } catch (LineUnavailableException e) {
-            logger.log(Level.SEVERE, "Brak sciezki audio w pliku: " + soundFileName, e);
+            logger.log(Level.SEVERE, e, () -> "Brak sciezki audio w pliku: " + soundFileName);
         }
     }
 }

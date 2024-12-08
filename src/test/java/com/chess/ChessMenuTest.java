@@ -2,25 +2,21 @@ package com.chess;
 
 import org.junit.jupiter.api.*;
 import org.mockito.*;
+
 import javax.swing.*;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ChessMenuTest {
+class ChessMenuTest {
     private ChessMenu chessMenu;
     @Mock
-    private JPanel mainPanel;
-    @Mock
-    private CardLayout cardLayout;
-    @Mock
     private GraphicsDevice gd;
-
     @Mock
     private GraphicsEnvironment mockGraphicsEnvironment;
-
     @Mock
     private JFrame frame;
 
@@ -31,17 +27,39 @@ public class ChessMenuTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        try (var ignored = MockitoAnnotations.openMocks(this)){
 
-        frame = mock(JFrame.class);
-        gd = mock(GraphicsDevice.class);
-        mockGraphicsEnvironment = mock(GraphicsEnvironment.class);
-        when(mockGraphicsEnvironment.getDefaultScreenDevice()).thenReturn(gd);
+            frame = mock(JFrame.class);
+            gd = mock(GraphicsDevice.class);
+            mockGraphicsEnvironment = mock(GraphicsEnvironment.class);
+            when(mockGraphicsEnvironment.getDefaultScreenDevice()).thenReturn(gd);
 
-        chessMenu = new ChessMenu(frame, gd);
+            chessMenu = new ChessMenu(frame, gd);
+        } catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        ChessMenu.cardLayout = cardLayout;
-        ChessMenu.mainPanel = mainPanel;
+    @Test
+    void testBackgroundPanelImageLoading() {
+        String validImagePath = "menu.png";
+
+        ChessMenu.BackgroundPanel panel = new ChessMenu.BackgroundPanel(validImagePath);
+
+        assertNotNull(panel.backgroundImage, "Obrazek powinien sie zaladowac.");
+    }
+
+    @Test
+    void testPaintComponentDrawsImage() {
+        ChessMenu.BackgroundPanel panel = new ChessMenu.BackgroundPanel("menu.png");
+
+        BufferedImage bufferedImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        Graphics realGraphics = bufferedImage.getGraphics();
+
+        panel.setSize(100, 100);
+        panel.paintComponent(realGraphics);
+
+        assertNotNull(panel.backgroundImage, "Obrazek tla nie powinien byc null.");
     }
 
     @Test
@@ -130,5 +148,4 @@ public class ChessMenuTest {
         }
         return null;
     }
-
 }

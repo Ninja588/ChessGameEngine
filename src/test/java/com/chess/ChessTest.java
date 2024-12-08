@@ -3,57 +3,78 @@ package com.chess;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ChessTest {
+    @Test
+    void castlingUI() {
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        assertNotNull(gui);
+
+        gui.chessBoard.clearBoard();
+        gui.chessBoard.whiteTurn = true;
+
+        King king = new King(true);
+        Rook rook = new Rook(true);
+
+        gui.chessBoard.setPiece(0, 4, king);
+        gui.chessBoard.setPiece(0, 0, rook);
+        Move kingMove = new Move(0,4,0,2,false);
+        Move rookMove = new Move(0, 0, 0, 3, false);
+        gui.updateCastlingUI(kingMove, rookMove,true);
+
+        assertNotNull(gui.boardSquares[0][2]);
+        assertNotNull(gui.boardSquares[0][3]);
+    }
 
     @Test
     void legalMovesGui() {
         ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
         assertNotNull(gui);
 
-        ChessGameGUI.chessBoard.clearBoard();
-        ChessGameGUI.chessBoard.whiteTurn = true;
+        gui.chessBoard.clearBoard();
+        gui.chessBoard.whiteTurn = true;
 
-        ChessGameGUI.chessBoard.setPiece(0,1, new King(true));
-        ChessGameGUI.boardSquares[0][1].setIcon(new ImageIcon("pieces/whiteKing.png"));
+        gui.boardSquares[4][4].doClick();
+        gui.boardSquares[4][4].doClick();
 
-        assertNotNull(ChessGameGUI.boardSquares[0][1].getIcon());
+        gui.chessBoard.setPiece(0,1, new King(true));
+        gui.boardSquares[0][1].setIcon(new ImageIcon("pieces/whiteKing.png"));
 
-        ChessGameGUI.chessBoard.setPiece(4,4, new Queen(true));
-        ChessGameGUI.chessBoard.setPiece(4,5, new Queen(false));
+        assertNotNull(gui.boardSquares[0][1].getIcon());
 
-        ChessGameGUI.boardSquares[4][4].setIcon(new ImageIcon("pieces/whiteQueen.png"));
-        ChessGameGUI.boardSquares[4][5].setIcon(new ImageIcon("pieces/blackQueen.png"));
+        gui.chessBoard.setPiece(4,4, new Queen(true));
+        gui.chessBoard.setPiece(4,5, new Queen(false));
 
-        assertNotNull(ChessGameGUI.boardSquares[4][5].getIcon());
+        gui.boardSquares[4][4].setIcon(new ImageIcon("pieces/whiteQueen.png"));
+        gui.boardSquares[4][5].setIcon(new ImageIcon("pieces/blackQueen.png"));
 
-        ChessGameGUI.chessBoard.setPiece(4,3, new Pawn(false));
-        ChessGameGUI.boardSquares[4][3].setIcon(new ImageIcon("pieces/blackPawn.png"));
+        assertNotNull(gui.boardSquares[4][5].getIcon());
 
-        assertNotNull(ChessGameGUI.boardSquares[4][3].getIcon());
+        gui.chessBoard.setPiece(4,3, new Pawn(false));
+        gui.boardSquares[4][3].setIcon(new ImageIcon("pieces/blackPawn.png"));
 
-        ChessGameGUI.chessBoard.setPiece(3,3, new Bishop(false));
-        ChessGameGUI.boardSquares[3][3].setIcon(new ImageIcon("pieces/blackBishop.png"));
+        assertNotNull(gui.boardSquares[4][3].getIcon());
 
-        assertNotNull(ChessGameGUI.boardSquares[3][3].getIcon());
+        gui.chessBoard.setPiece(3,3, new Bishop(false));
+        gui.boardSquares[3][3].setIcon(new ImageIcon("pieces/blackBishop.png"));
 
-        ChessGameGUI.chessBoard.setPiece(3,5, new Knight(false));
-        ChessGameGUI.boardSquares[3][5].setIcon(new ImageIcon("pieces/blackKnight.png"));
+        assertNotNull(gui.boardSquares[3][3].getIcon());
 
-        assertNotNull(ChessGameGUI.boardSquares[3][5].getIcon());
+        gui.chessBoard.setPiece(3,5, new Knight(false));
+        gui.boardSquares[3][5].setIcon(new ImageIcon("pieces/blackKnight.png"));
 
-        ChessGameGUI.chessBoard.setPiece(3,4, new Rook(false));
-        ChessGameGUI.boardSquares[3][4].setIcon(new ImageIcon("pieces/blackRook.png"));
+        assertNotNull(gui.boardSquares[3][5].getIcon());
 
-        assertNotNull(ChessGameGUI.boardSquares[3][4].getIcon());
+        gui.chessBoard.setPiece(3,4, new Rook(false));
+        gui.boardSquares[3][4].setIcon(new ImageIcon("pieces/blackRook.png"));
 
-        ChessGameGUI.boardSquares[4][4].doClick();
-        ChessGameGUI.boardSquares[4][5].doClick();
-        //ChessGameGUI.showLegalMoves();
+        assertNotNull(gui.boardSquares[3][4].getIcon());
+
+        gui.boardSquares[4][4].doClick();
+        gui.boardSquares[4][5].doClick();
     }
 
     @Test
@@ -65,14 +86,16 @@ class ChessTest {
 
     @Test
     void chessBoardState() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
 
         assertNotNull(board.generateBoardState());
     }
 
     @Test
     void canCastleQueenSide() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
 
         King king = new King(true);
@@ -85,8 +108,47 @@ class ChessTest {
     }
 
     @Test
+    void promotionCheck() {
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
+        board.clearBoard();
+
+        King king = new King(true);
+        King kingBlack = new King(false);
+        Pawn pawn = new Pawn(true);
+
+        board.setPiece(5, 4, king);
+        board.setPiece(2, 2, kingBlack);
+        board.setPiece(6, 4, pawn);
+
+        List<Move> actualMoves = pawn.getLegalMoves(board, 6, 4);
+
+        assertNotNull(actualMoves);
+    }
+
+    @Test
+    void promotionCheckBlack() {
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
+        board.clearBoard();
+
+        King kingBlack = new King(false);
+        King kingWhite = new King(true);
+        Pawn pawnBlack = new Pawn(false);
+
+        board.setPiece(2, 4, kingBlack);
+        board.setPiece(7, 7, kingWhite);
+        board.setPiece(1, 4, pawnBlack);
+
+        List<Move> actualMoves2 = pawnBlack.getLegalMoves(board, 1, 4);
+
+        assertNotNull(actualMoves2);
+    }
+
+    @Test
     void canCastleKingSide() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
         King king = new King(true);
         Rook rook = new Rook(true);
@@ -99,14 +161,16 @@ class ChessTest {
 
     @Test
     void isWhiteTurn() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
 
         assertTrue(board.isWhiteTurn(), "Powinno byc true");
     }
 
     @Test
     void getAllLegalMoves() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
 
         Rook rook = new Rook(true);
@@ -135,13 +199,17 @@ class ChessTest {
 
     @Test
     void aiMove() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.makeAIMove(true);
+
+        assertFalse(board.whiteTurn);
     }
 
     @Test
     void evaluateBoard() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
 
         Rook rook = new Rook(true);
@@ -154,7 +222,8 @@ class ChessTest {
 
     @Test
     void minimax() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
 
         Rook rook = new Rook(true);
@@ -169,7 +238,8 @@ class ChessTest {
 
     @Test
     void isCheckmate() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
         King king = new King(true);
         Rook rook = new Rook(false);
@@ -184,7 +254,8 @@ class ChessTest {
 
     @Test
     void isInCheck() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
         King king = new King(true);
         Rook rook = new Rook(false);
@@ -197,7 +268,8 @@ class ChessTest {
 
     @Test
     void isStalemate() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
 
         King king = new King(true);
@@ -223,7 +295,8 @@ class ChessTest {
 
     @Test
     void getLegalMoves() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
         Piece knight = new Knight(true);
         int x = 4, y = 4;
@@ -252,7 +325,8 @@ class ChessTest {
 
     @Test
     void setPiece() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         Knight knight = new Knight(false);
 
         board.setPiece(5, 5, knight);
@@ -262,7 +336,8 @@ class ChessTest {
 
     @Test
     void makeMove() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
         Pawn pawn = new Pawn(true);
         board.setPiece(5,4,pawn);
@@ -278,7 +353,8 @@ class ChessTest {
 
     @Test
     void pawnMoves() { //en passant bialy
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
 
         board.movePiece(1,1,3,1,false);
         board.movePiece(6,5,4,5,false);
@@ -292,7 +368,8 @@ class ChessTest {
 
     @Test
     void pawnMovesBlack() { //en passant czarny
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
 
         board.movePiece(1,1,3,1,false);
         board.movePiece(6,5,4,5,false);
@@ -307,7 +384,8 @@ class ChessTest {
 
     @Test
     void undoMove() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
         Pawn pawn = new Pawn(true);
         board.setPiece(5,4,pawn);
@@ -323,15 +401,6 @@ class ChessTest {
     }
 
     @Test
-    void getPreferredSize() {
-        EvaluationBar evaluationBar = new EvaluationBar();
-
-        Dimension pref = evaluationBar.getPreferredSize();
-
-        assertEquals(evaluationBar.getPreferredSize(), pref, "Wymiar powininen byc taki sam.");
-    }
-
-    @Test
     void testMove() {
         Move move = new Move(0,0,1,1,false);
 
@@ -344,14 +413,9 @@ class ChessTest {
     }
 
     @Test
-    void testPrintBoard() {
-        ChessBoard board = new ChessBoard();
-        board.printBoard();
-    }
-
-    @Test
     void isPinned() {
-        ChessBoard board = new ChessBoard();
+        ChessGameGUI gui = new ChessGameGUI(false, null, null, null, null, true);
+        ChessBoard board = new ChessBoard(gui);
         board.clearBoard();
         Pawn pawn = new Pawn(true);
         King king = new King(true);
