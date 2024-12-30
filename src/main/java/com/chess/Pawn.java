@@ -8,31 +8,37 @@ public class Pawn extends Piece{
         super(isWhite, PieceType.PAWN);
     }
 
-    public boolean hasMovedTwoSquares = false;
-    public boolean enPassant;
+    protected boolean hasMovedTwoSquares = false;
+    protected boolean enPassant;
+    protected boolean forward;
 
     @Override
     public List<Move> getLegalMoves(ChessBoard board, int x, int y) {
         List<Move> legalMoves = new ArrayList<>();
         int direction = isWhite ? 1 : -1;
         enPassant = false;
+        forward = true;
 
         // ruch do przodu
         if (x + direction >= 0 && x + direction < 8 && board.getPiece(x + direction, y) == null &&
-                (!board.isPinned(this, x, y) || board.wouldExposeKing(x, y, x + direction, y))) legalMoves.add(new Move(x, y, x + direction, y, false));
+                (!board.isPinned(this, x, y) || board.wouldExposeKing(x, y, x + direction, y)) && forward)
+            legalMoves.add(new Move(x, y, x + direction, y, false));
 
         // pozycja startowa (ruch podwojny)
         if (((isWhite && x == 1) || (!isWhite && x == 6)) && board.getPiece(x + direction, y) == null &&
                 board.getPiece(x + 2 * direction, y) == null && (!board.isPinned(this, x, y) || board.wouldExposeKing(x, y, x + 2 * direction, y))) {
             legalMoves.add(new Move(x, y, x + 2 * direction, y, false));
         }
+
         // zbicie
         for(int dx = -1; dx <= 1; dx += 2) { // dx = -1 (lewo) and 1 (prawo)
             int newX = x + direction;
             int newY = y + dx;
+
             if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
                 Piece pieceAtNewPos = board.getPiece(newX, newY);
-                if (pieceAtNewPos != null && pieceAtNewPos.isWhite != this.isWhite && (!board.isPinned(this, x, y) || board.wouldExposeKing(x, y, newX, newY)))
+                if (pieceAtNewPos != null && pieceAtNewPos.isWhite != this.isWhite && (!board.isPinned(this, x, y) || board.wouldExposeKing(x, y, newX, newY))
+                        && (x + direction >= 0 && x + direction < 8 && y - 1 >= 0 && !board.isEnPassantForced(x,y,x+direction,y-1,this.isWhite) || (x + direction >= 0 && x + direction < 8 && y + 1 < 8 && !board.isEnPassantForced(x,y,x+direction,y+1,this.isWhite))))
                     legalMoves.add(new Move(x, y, newX, newY, false));
             }
         }

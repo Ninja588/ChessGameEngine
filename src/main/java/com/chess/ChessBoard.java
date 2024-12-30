@@ -1,11 +1,7 @@
 package com.chess;
 
 import java.security.SecureRandom;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Stack;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ChessBoard {
     protected boolean whiteTurn = true;
@@ -58,7 +54,7 @@ public class ChessBoard {
 
     public void resetBoard() {
         board = new Piece[8][8];
-        capturedPieces = new Stack<>();
+        capturedPieces = new ArrayDeque<>();
         boardStates = new HashMap<>();
         whiteTurn = true;
 
@@ -369,13 +365,13 @@ public class ChessBoard {
         return true;
     }
 
-    private Stack<Piece> capturedPieces = new Stack<>();
+    private Deque<Piece> capturedPieces = new ArrayDeque<>();
 
     public void makeMove(Move move) {
         Piece piece = board[move.startX][move.startY];
         Piece targetPiece = board[move.endX][move.endY];
 
-        capturedPieces.push(targetPiece);
+        capturedPieces.push(targetPiece != null ? targetPiece : NullPiece.getInstance());
 
         board[move.endX][move.endY] = piece;
         board[move.startX][move.startY] = null;
@@ -387,7 +383,7 @@ public class ChessBoard {
         board[move.startX][move.startY] = piece;
 
         Piece capturedPiece = capturedPieces.pop();
-        board[move.endX][move.endY] = capturedPiece;
+        board[move.endX][move.endY] = capturedPiece instanceof NullPiece ? null : capturedPiece;
     }
 
 
@@ -428,14 +424,19 @@ public class ChessBoard {
         return !inCheck; // zwroci prawde jak krol bedzie w szachu a inaczej falsz
     }
 
-    public boolean ok; // zmienna czy ruch jest git
-    public boolean enpassantWhite;
-    public boolean enpassantBlack;
-    public boolean promoted = false;
+    protected boolean ok; // zmienna czy ruch jest git
+    protected boolean enpassantWhite;
+    protected boolean enpassantBlack;
+    protected boolean promoted = false;
+    private boolean wasPawnMove = false;
 
     public void movePiece(int startX, int startY, int endX, int endY, boolean isAiTurn) {
         if(isCheckmate(true) || isCheckmate(false) || isStalemate(true) || isStalemate(false)) {
             return;
+        }
+
+        if(!wasPawnMove) {
+            resetEnPassant();
         }
 
         Piece piece = board[startX][startY];
@@ -506,6 +507,7 @@ public class ChessBoard {
                     }
                     // piony mechaniki (prosze zabijcie tego co wymyslic en passant)
                     if(piece.pieceType == Piece.PieceType.PAWN) {
+                        wasPawnMove = true;
                         // en passant
                         if(Math.abs(endX - startX) == 2) {
                             ((Pawn) piece).hasMovedTwoSquares = true;
@@ -529,10 +531,16 @@ public class ChessBoard {
                             SoundManager.playSound("promote.wav");
                             promoted = true;
                         }
+                        SoundManager.playSound("move.wav");
+                        recordBoardState(isWhiteTurn());
+                        toggleTurn();
+
+                        return;
                     }
                     SoundManager.playSound("move.wav");
                     recordBoardState(isWhiteTurn());
                     toggleTurn();
+                    wasPawnMove = false;
                 } else {
                     ok = false;
                 }
@@ -581,7 +589,8 @@ public class ChessBoard {
     }
 
     public boolean isPinned(Piece piece, int x, int y) {
-        int kingX = -1, kingY = -1;
+        int kingX = -1;
+        int kingY = -1;
 
         // znalezenie pozycji krola
         for(int i = 0; i < 8; i++) {
@@ -596,24 +605,63 @@ public class ChessBoard {
 
         // chwilowe usuniecie figury z planszy
         Piece tempPiece = board[x][y];
+
         board[x][y] = null;
 
         // sprwadzanie czy krol bylby w szachu po usunieciu figury
-        boolean isPinned = isSquareAttacked(kingX, kingY, !piece.isWhite);
+        boolean isPinned;
+
+        Piece tempPiecePawn1 = null;
+        Piece tempPiecePawn2 = null;
+
         if(tempPiece != null && tempPiece.pieceType == Piece.PieceType.PAWN && x<8 && y<7 && x>0 && y>0) {
-            Piece tempPiecePawn1 = getPiece(x,y-1);
-            Piece tempPiecePawn2 = getPiece(x,y+1);
-            if(tempPiecePawn1 != null && tempPiecePawn2 != null && ((tempPiecePawn1.pieceType == Piece.PieceType.PAWN && ((Pawn) tempPiecePawn1).hasMovedTwoSquares) ||
-                    (tempPiecePawn2.pieceType == Piece.PieceType.PAWN && ((Pawn) tempPiecePawn2).hasMovedTwoSquares) &&
-                            isSquareAttacked(kingX, kingY, !piece.isWhite))) {
-                isPinned = false;
+            tempPiecePawn1 = getPiece(x,y-1);
+            tempPiecePawn2 = getPiece(x,y+1);
+            if(tempPiecePawn1 != null && (tempPiecePawn1.pieceType == Piece.PieceType.PAWN && ((Pawn) tempPiecePawn1).hasMovedTwoSquares)) {
+                board[x][y-1] = null;
+                ((Pawn) tempPiece).forward = false;
+            }
+            else if(tempPiecePawn2 != null && tempPiecePawn2.pieceType == Piece.PieceType.PAWN && ((Pawn) tempPiecePawn2).hasMovedTwoSquares) {
+                board[x][y+1] = null;
+                ((Pawn) tempPiece).forward = false;
             }
         }
 
+        isPinned = isSquareAttacked(kingX, kingY, !piece.isWhite);
+
         // figura wraca na swoje miejsce
         board[x][y] = tempPiece;
+        if(y-1>=0 && tempPiecePawn1!=null) board[x][y-1] = tempPiecePawn1;
+        if(y+1<8&& tempPiecePawn2!=null) board[x][y+1] = tempPiecePawn2;
 
         return isPinned;
+    }
+
+    protected boolean isEnPassantForced(int startX, int startY, int endX, int endY, boolean isWhite) {
+        Piece movingPawn = board[startX][startY];
+        Piece targetPiece = board[endX][endY];
+
+        board[endX][endY] = movingPawn;
+
+        int kingX = -1;
+        int kingY = -1;
+        for(int i = 0; i < 8; i++) {
+            for(int j = 0; j < 8; j++) {
+                Piece piece = board[i][j];
+                if(piece != null && piece.pieceType == Piece.PieceType.KING && piece.isWhite == isWhite) {
+                    kingX = i;
+                    kingY = j;
+                    break;
+                }
+            }
+        }
+
+        boolean forced = isSquareAttacked(kingX, kingY, !isWhite);
+
+        board[startX][startY] = movingPawn;
+        board[endX][endY] = targetPiece;
+
+        return forced;
     }
 
     public boolean wouldExposeKing(int startX, int startY, int endX, int endY) {
@@ -625,7 +673,8 @@ public class ChessBoard {
         setPiece(startX, startY, null);
 
         // znajdz pozycje krola
-        int kingX = -1, kingY = -1;
+        int kingX = -1;
+        int kingY = -1;
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
                 Piece piece = board[i][j];
@@ -664,9 +713,6 @@ public class ChessBoard {
 
     public void makeAIMove(boolean isWhite) {
         List<Move> legalMoves = getAllLegalMoves(isWhite);
-        boolean castleON = false;
-        boolean castleCheck = false;
-        Move tempMove = null;
 
         if(!legalMoves.isEmpty()) {
             Move bestMove = null;
@@ -676,19 +722,9 @@ public class ChessBoard {
                 makeMove(move);
                 int boardValue = minimax(3, Integer.MIN_VALUE, Integer.MAX_VALUE,!isWhite);
                 undoMove(move);
-                castleCheck = (move.endX == 7 || move.endX == 0) && (move.endY == 2 || move.endY == 6);
                 if(isWhite && boardValue > bestValue || !isWhite && boardValue < bestValue) {
                     bestValue = boardValue;
                     bestMove = move;
-                    tempMove = move;
-
-                }
-
-            }
-            if(castleCheck && tempMove != null) {
-                Piece tempPieceKing = getPiece(tempMove.startX, tempMove.startY);
-                if(tempPieceKing != null && tempPieceKing.pieceType == Piece.PieceType.KING && !((King) tempPieceKing).castle && !tempPieceKing.hasMoved) {
-                    castleON = true;
                 }
             }
 
@@ -711,8 +747,7 @@ public class ChessBoard {
                     board[bestMove.endX][bestMove.endY] = promotedPiece;
                     gui.updateBoard(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, "Queen", isWhite);
                     SoundManager.playSound("promote.wav");
-                } else if(tempPiece.pieceType == Piece.PieceType.KING && (!((King) tempPiece).castle && (bestMove.endY == 2 &&
-                        (bestMove.endX == 0 || bestMove.endX == 7)) || (bestMove.endY == 6 && (bestMove.endX == 0 || bestMove.endX == 7))) && castleON);
+                }
                 else
                     gui.updateBoard(bestMove.startX, bestMove.startY, bestMove.endX, bestMove.endY, tempName, isWhite);
             }
@@ -867,7 +902,7 @@ public class ChessBoard {
             -30,-40,-40,-50,-50,-40,-40,-30,
             -30,-40,-40,-50,-50,-40,-40,-30,
             -30,-40,-40,-50,-50,-40,-40,-30,
-            -30,-40,-40,-50,-50,-40,-40,-30,
+            -30,-40,-40,-50,-50,-40,-40,-30
     };
 
     private static final int[] BLACK_KING_ENDGAME_TABLE = new int[] {
@@ -878,7 +913,7 @@ public class ChessBoard {
             30,  10, -30, -40, -40, -30,  10,  30,
             30,  10, -20, -30, -30, -20,  10,  30,
             30,  30,   0,   0,   0,   0,  30,  30,
-            50,  30,  30,  30,  30,  30,  30,  50,
+            50,  30,  30,  30,  30,  30,  30,  50
     };
 
 
@@ -890,7 +925,7 @@ public class ChessBoard {
             -30,-10, 30, 40, 40, 30,-10,-30,
             -30,-10, 20, 30, 30, 20,-10,-30,
             -30,-20,-10,  0,  0,-10,-20,-30,
-            -50,-40,-30,-20,-20,-30,-40,-50,
+            -50,-40,-30,-20,-20,-30,-40,-50
     };
 
     private static final int[] BLACK_QUEEN_TABLE = new int[] {
@@ -912,7 +947,7 @@ public class ChessBoard {
             -5,   0,  5,  5,  5,  5,  0, -5,
             -10,  0,  5,  5,  5,  5,  0,-10,
             -10,  0,  0,  0,  0,  0,  0,-10,
-            -20,-10,-10, -5, -5,-10,-10,-20,
+            -20,-10,-10, -5, -5,-10,-10,-20
     };
 
     private static final int[] WHITE_BISHOP_TABLE = new int[] {
@@ -956,7 +991,7 @@ public class ChessBoard {
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
              5, 10, 10, 10, 10, 10, 10,  5,
-            10, 10, 10, 10, 10, 10, 10, 10,
+            10, 10, 10, 10, 10, 10, 10, 10
     };
 
     private static final int[] BLACK_KNIGHT_TABLE = new int[] {
@@ -978,13 +1013,13 @@ public class ChessBoard {
             -30,  5, 15, 20, 20, 15,  5,-30,
             -30,  0, 10, 15, 15, 10,  0,-30,
             -40,-20,  0,  0,  0,  0,-20,-40,
-            -50,-40,-30,-30,-30,-30,-40,-50,
+            -50,-40,-30,-30,-30,-30,-40,-50
     };
 
     private int pieceValue(Piece piece) {
         int value = 0;
         switch(piece.pieceType) {
-            case KING -> value=20000;
+            case KING -> value=200000;
             case QUEEN -> value = 900;
             case ROOK -> value = 500;
             case BISHOP, KNIGHT -> value = 300;

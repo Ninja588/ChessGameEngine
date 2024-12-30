@@ -13,7 +13,6 @@ public class ChessMenu {
     protected CardLayout cardLayout;
     private int width;
     private int height;
-    private String lastRes;
     private Color lightSquaresColor=null;
     private Color darkSquaresColor=null;
     private GraphicsDevice gd;
@@ -124,7 +123,7 @@ public class ChessMenu {
         JCheckBox fullscreenCheckbox = new JCheckBox("Fullscreen", true);
 
         String nativeRes = width+"x"+height+" (native)";
-        lastRes = nativeRes;
+        final String[] lastRes = {nativeRes};
         String[] resolutions = {nativeRes, "800x600", "1366x768", "1600x900", "1920x1080", "2560x1440"};
 
         JComboBox<String> resolutionComboBox = new JComboBox<>(resolutions);
@@ -138,31 +137,31 @@ public class ChessMenu {
                     case "800x600":
                         width = 800;
                         height = 600;
-                        lastRes = width+"x"+height;
+                        lastRes[0] = width+"x"+height;
                         frame.setSize(width, height);
                         break;
                     case "1366x768":
                         width = 1366;
                         height = 768;
-                        lastRes = width+"x"+height;
+                        lastRes[0] = width+"x"+height;
                         frame.setSize(width, height);
                         break;
                     case "1600x900":
                         width = 1600;
                         height = 900;
-                        lastRes = width+"x"+height;
+                        lastRes[0] = width+"x"+height;
                         frame.setSize(width, height);
                         break;
                     case "1920x1080":
                         width = 1920;
                         height = 1080;
-                        lastRes = width+"x"+height;
+                        lastRes[0] = width+"x"+height;
                         frame.setSize(width, height);
                         break;
                     case "2560x1440":
                         width = 2560;
                         height = 1440;
-                        lastRes = width+"x"+height;
+                        lastRes[0] = width+"x"+height;
                         frame.setSize(width, height);
                         break;
                     default:
@@ -198,7 +197,7 @@ public class ChessMenu {
                 frame.setExtendedState(Frame.NORMAL);
                 frame.setVisible(true);
                 for(int i=0;i<resolutions.length;i++) {
-                    if(resolutions[i].equals(lastRes)) {
+                    if(resolutions[i].equals(lastRes[0])) {
                         resolutionComboBox.setSelectedIndex(i);
                         break;
                     }
@@ -281,7 +280,7 @@ public class ChessMenu {
     }
 
     public static class BackgroundPanel extends JPanel {
-        protected final Image backgroundImage;
+        protected final transient Image backgroundImage;
 
         public BackgroundPanel(String path) {
             backgroundImage = new ImageIcon(path).getImage();

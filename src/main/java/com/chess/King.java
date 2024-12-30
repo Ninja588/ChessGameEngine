@@ -8,7 +8,7 @@ public class King extends Piece {
         super(isWhite, PieceType.KING);
     }
 
-    public boolean castle = false;
+    protected boolean castle = false;
 
     @Override
     public List<Move> getLegalMoves(ChessBoard board, int x, int y) {

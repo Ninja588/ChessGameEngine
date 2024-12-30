@@ -179,6 +179,10 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
             labeledBoardPanel.add(sideLabels, BorderLayout.EAST);
         }
 
+        initializeBoardSquares();
+    }
+
+    private void initializeBoardSquares() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 0;
@@ -222,11 +226,11 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         }
     }
 
-    public int tempX;
-    public int tempY;
-    public String tempS;
-    public boolean tempIsWhite;
-    public boolean player;
+    private int tempX;
+    private int tempY;
+    private String tempS;
+    private boolean tempIsWhite;
+    private boolean player;
 
     private void checkGameConditions() {
         if(chessBoard.isCheckmate(true)) {
