@@ -4,8 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.security.SecureRandom;
 
-import static java.lang.Integer.parseInt;
-
 public class ChessMenu {
     private boolean playerVsAI = true;
     protected JFrame frame;

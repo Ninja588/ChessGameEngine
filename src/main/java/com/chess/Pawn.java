@@ -11,6 +11,7 @@ public class Pawn extends Piece{
     protected boolean hasMovedTwoSquares = false;
     protected boolean enPassant;
     protected boolean forward;
+    protected boolean forcedEnPssant;
 
     @Override
     public List<Move> getLegalMoves(ChessBoard board, int x, int y) {
@@ -18,6 +19,11 @@ public class Pawn extends Piece{
         int direction = isWhite ? 1 : -1;
         enPassant = false;
         forward = true;
+
+        if((x + direction >= 0 && x + direction < 8 && y - 1 >= 0 && !board.isEnPassantForced(x,y,x+direction,y-1,this.isWhite)
+                || (x + direction >= 0 && x + direction < 8 && y + 1 < 8 && !board.isEnPassantForced(x,y,x+direction,y+1,this.isWhite))))
+            forcedEnPssant = false;
+        else forcedEnPssant = true;
 
         // ruch do przodu
         if (x + direction >= 0 && x + direction < 8 && board.getPiece(x + direction, y) == null &&
@@ -38,7 +44,8 @@ public class Pawn extends Piece{
             if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
                 Piece pieceAtNewPos = board.getPiece(newX, newY);
                 if (pieceAtNewPos != null && pieceAtNewPos.isWhite != this.isWhite && (!board.isPinned(this, x, y) || board.wouldExposeKing(x, y, newX, newY))
-                        && (x + direction >= 0 && x + direction < 8 && y - 1 >= 0 && !board.isEnPassantForced(x,y,x+direction,y-1,this.isWhite) || (x + direction >= 0 && x + direction < 8 && y + 1 < 8 && !board.isEnPassantForced(x,y,x+direction,y+1,this.isWhite))))
+                        && (x + direction >= 0 && x + direction < 8 && y - 1 >= 0 && !board.isEnPassantForced(x,y,x+direction,y-1,this.isWhite)
+                        || (x + direction >= 0 && x + direction < 8 && y + 1 < 8 && !board.isEnPassantForced(x,y,x+direction,y+1,this.isWhite))))
                     legalMoves.add(new Move(x, y, newX, newY, false));
             }
         }

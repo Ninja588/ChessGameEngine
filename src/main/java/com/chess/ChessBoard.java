@@ -518,13 +518,13 @@ public class ChessBoard {
                             if(piece.isWhite) {
                                 board[endX - 1][endY] = null;
                                 enpassantWhite = true;
+                                if(board[startX+1][startY] == null) SoundManager.playSound("capture.wav");
                             } else {
                                 board[endX + 1][endY] = null;
                                 enpassantBlack = true;
+                                if(board[startX-1][startY] == null) SoundManager.playSound("capture.wav");
                             }
-                            SoundManager.playSound("capture.wav");
                         }
-
                         // promo piona na inne figury
                         if ((endX == 7 || endX == 0) && promotionListener != null && !isAiTurn) {
                             promotionListener.onPromotion(endX, endY, piece.isWhite);
@@ -617,11 +617,11 @@ public class ChessBoard {
         if(tempPiece != null && tempPiece.pieceType == Piece.PieceType.PAWN && x<8 && y<7 && x>0 && y>0) {
             tempPiecePawn1 = getPiece(x,y-1);
             tempPiecePawn2 = getPiece(x,y+1);
-            if(tempPiecePawn1 != null && (tempPiecePawn1.pieceType == Piece.PieceType.PAWN && ((Pawn) tempPiecePawn1).hasMovedTwoSquares)) {
+            if(tempPiecePawn1 != null && tempPiecePawn1.isWhite != tempPiece.isWhite && (tempPiecePawn1.pieceType == Piece.PieceType.PAWN && ((Pawn) tempPiecePawn1).hasMovedTwoSquares)) {
                 board[x][y-1] = null;
                 ((Pawn) tempPiece).forward = false;
             }
-            else if(tempPiecePawn2 != null && tempPiecePawn2.pieceType == Piece.PieceType.PAWN && ((Pawn) tempPiecePawn2).hasMovedTwoSquares) {
+            else if(tempPiecePawn2 != null && tempPiecePawn2.isWhite != tempPiece.isWhite && tempPiecePawn2.pieceType == Piece.PieceType.PAWN && ((Pawn) tempPiecePawn2).hasMovedTwoSquares) {
                 board[x][y+1] = null;
                 ((Pawn) tempPiece).forward = false;
             }
@@ -629,10 +629,12 @@ public class ChessBoard {
 
         isPinned = isSquareAttacked(kingX, kingY, !piece.isWhite);
 
+        if(tempPiece!=null && tempPiece.pieceType == Piece.PieceType.PAWN && !isPinned && !((Pawn) tempPiece).forcedEnPssant) ((Pawn) tempPiece).forward = true;
+
         // figura wraca na swoje miejsce
         board[x][y] = tempPiece;
         if(y-1>=0 && tempPiecePawn1!=null) board[x][y-1] = tempPiecePawn1;
-        if(y+1<8&& tempPiecePawn2!=null) board[x][y+1] = tempPiecePawn2;
+        if(y+1<8 && tempPiecePawn2!=null) board[x][y+1] = tempPiecePawn2;
 
         return isPinned;
     }
