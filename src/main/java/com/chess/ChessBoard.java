@@ -795,7 +795,7 @@ public class ChessBoard {
     public int evaluateBoard() {
         int score = 0;
 
-        boolean isEndGame = findBothQueens();
+        boolean isEndGame = isEndGame();
 
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
@@ -842,7 +842,7 @@ public class ChessBoard {
         return score;
     }
 
-    private boolean findBothQueens()
+    private boolean isEndGame()
     {
         Piece queen1 = null;
         Piece queen2 = null;
@@ -854,12 +854,12 @@ public class ChessBoard {
                 if(temp != null) {
                     if(temp.pieceType == Piece.PieceType.QUEEN && temp.isWhite) queen1 = temp;
                     else if(temp.pieceType == Piece.PieceType.QUEEN) queen2 = temp;
-                    tempCounter++;
+                    if(temp.pieceType != Piece.PieceType.PAWN && temp.pieceType != Piece.PieceType.KING) tempCounter++;
                 }
             }
         }
 
-        if(tempCounter <= 15) return true;
+        if(tempCounter <= 3) return true;
         else return queen1 == null && queen2 == null;
     }
 
