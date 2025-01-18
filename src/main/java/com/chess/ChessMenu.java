@@ -4,11 +4,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.security.SecureRandom;
 
+/**
+ * Klasa odpowiadajaca za GUI menu
+ */
 public class ChessMenu {
     private boolean playerVsAI = true;
-    protected JFrame frame;
-    protected JPanel mainPanel;
-    protected CardLayout cardLayout;
+    private boolean isPlayerWhite = true;
+    private JFrame frame;
+    private JPanel mainPanel;
+    private CardLayout cardLayout;
     private int width;
     private int height;
     private Color lightSquaresColor=null;
@@ -19,6 +23,11 @@ public class ChessMenu {
     private static final String MAIN_MENU = "Main Menu";
     private static final String SETTINGS = "Settings";
 
+    /**
+     * Konsturktor GUI menu
+     * @param frame ramka (potrzebne w testach)
+     * @param gd urzadzenie graficzne (potrzebne w testach)
+     */
     public ChessMenu(JFrame frame, GraphicsDevice gd) {
         if(isHeadless()) {
             this.frame = new JFrame("Szachy");
@@ -58,6 +67,10 @@ public class ChessMenu {
         return !GraphicsEnvironment.isHeadless();
     }
 
+    /**
+     * Metoda tworzaca panel menu
+     * @return panel menu
+     */
     protected JPanel createMenuPanel() {
         JPanel menuPanel = new BackgroundPanel("menu.png");
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
@@ -95,6 +108,10 @@ public class ChessMenu {
         return panel;
     }
 
+    /**
+     * Metoda tworzaca panel ustawien
+     * @return panel ustawien
+     */
     protected JPanel createSettingsPanel() {
         JPanel settingsPanel = new BackgroundPanel("menu.png");
         settingsPanel.setLayout(new BoxLayout(settingsPanel, BoxLayout.Y_AXIS));
@@ -117,6 +134,29 @@ public class ChessMenu {
         settingsPanel.add(createCenteredComponent(modeComboBox));
 
         settingsPanel.add(Box.createVerticalStrut(20));
+
+        JLabel labelPlayerColor = new JLabel("Kolor gracza:", SwingConstants.CENTER);
+        labelPlayerColor.setFont(new Font(ARIAL, Font.BOLD, 20));
+        labelPlayerColor.setForeground(Color.WHITE);
+        labelPlayerColor.setAlignmentX(Component.CENTER_ALIGNMENT);
+        settingsPanel.add(createCenteredComponent(labelPlayerColor));
+
+        String[] playerColors = {"Biały", "Czarny"};
+        JComboBox<String> playerColorComboBox = new JComboBox<>(playerColors);
+        playerColorComboBox.setFont(new Font(ARIAL, Font.PLAIN, 18));
+        playerColorComboBox.setMaximumSize(new Dimension(200,30));
+        playerColorComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+        playerColorComboBox.addActionListener(e->isPlayerWhite = "Biały".equals(playerColorComboBox.getSelectedItem()));
+        playerColorComboBox.setName("playerColorComboBox");
+        settingsPanel.add(createCenteredComponent(playerColorComboBox));
+
+        settingsPanel.add(Box.createVerticalStrut(20));
+
+        JLabel labelResolution = new JLabel("Rozdzielczość:", SwingConstants.CENTER);
+        labelResolution.setFont(new Font(ARIAL, Font.BOLD, 20));
+        labelResolution.setForeground(Color.WHITE);
+        labelResolution.setAlignmentX(Component.CENTER_ALIGNMENT);
+        settingsPanel.add(createCenteredComponent(labelResolution));
 
         JCheckBox fullscreenCheckbox = new JCheckBox("Fullscreen", true);
 
@@ -169,8 +209,6 @@ public class ChessMenu {
         });
         resolutionComboBox.setName("resolutionComboBox");
         settingsPanel.add(createCenteredComponent(resolutionComboBox));
-
-        settingsPanel.add(Box.createVerticalStrut(20));
 
         fullscreenCheckbox.setFont(new Font(ARIAL, Font.PLAIN, 18));
         fullscreenCheckbox.setMaximumSize(new Dimension(200, 30));
@@ -270,16 +308,26 @@ public class ChessMenu {
     }
 
     private void startGame() {
-        SecureRandom rand = new SecureRandom();
-        ChessGameGUI gameGUI  = new ChessGameGUI(playerVsAI, mainPanel, cardLayout, lightSquaresColor, darkSquaresColor, rand.nextBoolean());
+        //SecureRandom rand = new SecureRandom();
+        ChessGameGUI gameGUI  = new ChessGameGUI(playerVsAI, mainPanel, cardLayout, lightSquaresColor, darkSquaresColor, isPlayerWhite);
 
         mainPanel.add(gameGUI.getGamePanel(), "Game");
         cardLayout.show(mainPanel, "Game");
     }
 
+    /**
+     * Klasa tworzaca tlo z obrazka
+     */
     public static class BackgroundPanel extends JPanel {
+        /**
+         * Zmienna przechowywujaca obrazek
+         */
         protected final transient Image backgroundImage;
 
+        /**
+         * Konstruktor tworzacy obrazek z podanego pliku
+         * @param path sciezka do pliku ze zdjeciem
+         */
         public BackgroundPanel(String path) {
             backgroundImage = new ImageIcon(path).getImage();
         }

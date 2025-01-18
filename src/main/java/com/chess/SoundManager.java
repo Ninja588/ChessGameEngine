@@ -7,12 +7,20 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Klasa odpowiadajaca za dzwiek
+ */
 public class SoundManager {
     private static final Logger logger = Logger.getLogger(SoundManager.class.getName());
     private SoundManager() {
         logger.log(Level.WARNING, "Utility class");
         throw new IllegalStateException("Utility class");
     }
+
+    /**
+     * Metoda odpowiadajaca za odtwarzanie dzwieku
+     * @param soundFileName nazwa pliku z dzwiekiem
+     */
     public static void playSound(String soundFileName) {
         try {
             if(System.getenv("CI") != null) {

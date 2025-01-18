@@ -1,7 +1,6 @@
 import com.chess.ChessMenu;
-
 public class Main {
     public static void main(String[] args) {
-        new ChessMenu(null, null);
+        ChessMenu game = new ChessMenu(null, null);
     }
 }

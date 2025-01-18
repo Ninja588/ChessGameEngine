@@ -3,7 +3,14 @@ package com.chess;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Klasa gonca
+ */
 public class Bishop extends Piece {
+    /**
+     * Konstruktor dla gonca
+     * @param isWhite kolor gonca
+     */
     public Bishop(boolean isWhite) {
         super(isWhite, PieceType.BISHOP);
     }

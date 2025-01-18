@@ -3,11 +3,21 @@ package com.chess;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Klasa krola
+ */
 public class King extends Piece {
+    /**
+     * Konstruktor dla krola
+     * @param isWhite kolor krola
+     */
     public King(boolean isWhite) {
         super(isWhite, PieceType.KING);
     }
 
+    /**
+     * Zmienna pomocnicza do roszady
+     */
     protected boolean castle = false;
 
     @Override

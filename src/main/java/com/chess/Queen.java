@@ -3,7 +3,14 @@ package com.chess;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Klasa dla figury hetmana
+ */
 public class Queen extends Piece{
+    /**
+     * Konstruktor dla hetmana
+     * @param isWhite kolor hetmana
+     */
     public Queen(boolean isWhite) {
         super(isWhite, PieceType.QUEEN);
     }

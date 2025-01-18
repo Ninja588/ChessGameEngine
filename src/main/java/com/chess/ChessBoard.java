@@ -3,13 +3,35 @@ package com.chess;
 import java.security.SecureRandom;
 import java.util.*;
 
+/**
+ * Klasa odpowiadajaca za logike na szachownicy
+ */
 public class ChessBoard {
+    /**
+     * Zmienna odpowiadajaca za sledzenie tury
+     */
     protected boolean whiteTurn = true;
+    /**
+     * Tablica 8x8 przechowywujaca wszystkie bierki
+     */
     private Piece[][] board;
+    /**
+     * Zmienna pomagajaca w promowaniu pionow na figury
+     */
     private PromotionListener promotionListener;
+    /**
+     * Mapa pomagajca utrzymywac kontrole nad remisem po 3 powtorzonych pozycjach
+     */
     private Map<String, Integer> boardStates = new HashMap<>();
+    /**
+     * Zmienna GUI
+     */
     ChessGameGUI gui;
 
+    /**
+     * Metoda generujaca stan aktualnej szachownicy
+     * @return Slowna reprezentacja szachownicy
+     */
     public String generateBoardState() {
         StringBuilder boardState = new StringBuilder();
         for(int i = 0; i < 8; i++) {
@@ -25,6 +47,9 @@ public class ChessBoard {
         return boardState.toString();
     }
 
+    /**
+     * Czysci plansze ze wszystkich bierek
+     */
     public void clearBoard() {
         for(int i = 0;i<8;i++) {
             for(int j=0;j<8;j++) {
@@ -33,11 +58,19 @@ public class ChessBoard {
         }
     }
 
+    /**
+     * Metoda zapisujaca do mapy stan szachownicy
+     * @param isWhiteTurn parametr sprawdzajacy kogo jest aktualna tura (true - bialy, false - czarny)
+     */
     public void recordBoardState(boolean isWhiteTurn) {
         String boardState = generateBoardState() + (isWhiteTurn ? "W" : "B");
         boardStates.put(boardState, boardStates.getOrDefault(boardState, 0) + 1);
     }
 
+    /**
+     * Metoda sprawdzajaca czy jest remis poprzez powtorzewnie pozycji 3 razy
+     * @return true - jest remis, false - nie ma remisu
+     */
     public boolean isThreefoldRepetition() {
         for(int count : boardStates.values()) {
             if(count >= 3) {
@@ -47,11 +80,18 @@ public class ChessBoard {
         return false;
     }
 
+    /**
+     * Konstruktor klasy odpowiadajacej za szachownice
+     * @param gui GUI
+     */
     public ChessBoard(ChessGameGUI gui) {
         this.gui = gui;
         resetBoard();
     }
 
+    /**
+     * Metoda resetujaca wszystko w klasie
+     */
     public void resetBoard() {
         board = new Piece[8][8];
         capturedPieces = new ArrayDeque<>();
@@ -61,21 +101,45 @@ public class ChessBoard {
         initializeBoard();
     }
 
+    /**
+     * Metoda zwracaja kogo jest tura
+     * @return true - jest tura bialych, false - jest tura czarnych
+     */
     public boolean isWhiteTurn() {
         return whiteTurn;
     }
 
+    /**
+     * Metoda zmieniajaca ture
+     */
     public void toggleTurn() {
         whiteTurn = !whiteTurn;
     }
 
+    /**
+     * Interfejs wspomagajacy awans piona na figury
+     */
     public interface PromotionListener {
+        /**
+         * Deklaracja metody odpowiadajacej za awans piona
+         * @param x koordynat x piona
+         * @param y koordynat y piona
+         * @param isWhite kolor piona
+         */
         void onPromotion(int x, int y, boolean isWhite);
     }
+
+    /**
+     * Metoda ustawiajaca odpowiedni listener
+     * @param listener listener awansu
+     */
     public void setPromotionListener(PromotionListener listener) {
         this.promotionListener = listener;
     }
 
+    /**
+     * Metoda inicjalizujaca wszystkie figury na szachownicy
+     */
     private void initializeBoard() {
         // biale figury
         // rook
@@ -116,15 +180,32 @@ public class ChessBoard {
         }
     }
 
+    /**
+     * Metoda wstawiajaca figure na dane pole
+     * @param x koordynat x na ktorym ma zostac wstawiona figura
+     * @param y koordynat y na ktorym ma zostac wstawiona figura
+     * @param piece figura, ktora ma zostac wstawiona
+     */
     public void setPiece(int x, int y, Piece piece)
     {
         board[x][y] = piece;
     }
 
+    /**
+     * Metoda zwracajaca figure z danego pola
+     * @param x koordynat x na ktorym chcemy sprawdzic figure
+     * @param y koordynat y na ktorym chcemy sprawdzic figure
+     * @return figura na danym polu
+     */
     public Piece getPiece(int x, int y) {
         return board[x][y];
     }
 
+    /**
+     * Metoda sprawdzajaca czy jest mozliwa roszada po stronie krola
+     * @param isWhite kolor figury
+     * @return true - da sie, false - nie da sie
+     */
     public boolean canCastleKingSide(boolean isWhite) {
         int row = isWhite ? 0 : 7; // wybierz wiersz dla czarnego/bialego krola
         Piece king = board[row][4]; // krol jest na (row, 4)
@@ -146,6 +227,11 @@ public class ChessBoard {
         return (!isInCheck(isWhite) && isInCheckAfterMove(isWhite, row, 5) && isInCheckAfterMove(isWhite, row, 6)) || (king.pieceType != Piece.PieceType.KING || ((King) king).castle);// wszystko git
     }
 
+    /**
+     * Metoda sprawdzajaca czy jest mozliwa roszada po stronie krolowki
+     * @param isWhite kolor figury
+     * @return true - da sie, false - nie da sie
+     */
     public boolean canCastleQueenSide(boolean isWhite) {
         int row = isWhite ? 0 : 7; // wybierz wiersz dla czarnego/bialego krola
         Piece king = board[row][4]; // krol jest na (row, 4)
@@ -167,8 +253,16 @@ public class ChessBoard {
         return (!isInCheck(isWhite) && isInCheckAfterMove(isWhite, row, 2) && isInCheckAfterMove(isWhite, row, 3)) || (king.pieceType != Piece.PieceType.KING || ((King) king).castle);// wszystko git
     }
 
+    /**
+     * Zmienna pomocnicza czy zostal odtworzony dzwiek szacha
+     */
     private boolean checkSound = false;
 
+    /**
+     * Metoda sprawdzajaca czy krol jest w szachu
+     * @param isWhite kolor figury
+     * @return true - krol jest w szachu, false - krol nie jest w szachu
+     */
     public boolean isInCheck(boolean isWhite) {
         int kingX = -1;
         int kingY = -1;
@@ -209,6 +303,13 @@ public class ChessBoard {
         return false;
     }
 
+    /**
+     * Metoda pomocnicza sprawdzajaca czy dane pole jest atakowane przez jakas figure
+     * @param x koordynat x pola, ktore sprawdzamy
+     * @param y koordynat y pola, ktore sprawdzamy
+     * @param byWhite kolor atakujacego
+     * @return true - pole jest atakowane, false - pole nie jest atakowane
+     */
     public boolean isSquareAttacked(int x, int y, boolean byWhite) {
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
@@ -262,6 +363,15 @@ public class ChessBoard {
     }
 
     // metoda sprawdzajaca czy sciezka jest wolna dla rook, goncow, krolowek
+
+    /**
+     * Metoda sprawdzajaca czy sciezka po ktorej poruszala by sie wieza, goniec lub krolowka jest wolna
+     * @param startX koordynat startowy x
+     * @param startY koordynat startowy y
+     * @param endX koordynat koncowy x
+     * @param endY koordynat koncowy y
+     * @return true - droga jest wolna, false - nie jest
+     */
     private boolean isPathClear(int startX, int startY, int endX, int endY) {
         int dx = Integer.compare(endX, startX);
         int dy = Integer.compare(endY, startY);
@@ -279,7 +389,11 @@ public class ChessBoard {
         return true;
     }
 
-
+    /**
+     * Metoda sprawdzajaca czy jest mat na planszy
+     * @param isWhite kolor dla ktorego bylby mat
+     * @return true - jest mat, false - nie ma mata
+     */
     public boolean isCheckmate(boolean isWhite) {
         if(!isInCheck(isWhite)) {
             return false; // nie w szachu
@@ -334,6 +448,11 @@ public class ChessBoard {
         return true; // mat
     }
 
+    /**
+     * Metoda sprawdzajaca czy jest remis
+     * @param isWhite kolor dla ktorego sie sprawdza
+     * @return true - jest remis, false - nie ma
+     */
     public boolean isStalemate(boolean isWhite) {
         if(isThreefoldRepetition()) {
             return true; // powtorzenie pozycji 3 razy (stalemate)
@@ -365,8 +484,15 @@ public class ChessBoard {
         return true;
     }
 
+    /**
+     * Kolekcja pomocnicza przechowywujaca figury
+     */
     private Deque<Piece> capturedPieces = new ArrayDeque<>();
 
+    /**
+     * Metoda symulujaca ruch
+     * @param move ruch do wykonania
+     */
     public void makeMove(Move move) {
         Piece piece = board[move.startX][move.startY];
         Piece targetPiece = board[move.endX][move.endY];
@@ -377,6 +503,10 @@ public class ChessBoard {
         board[move.startX][move.startY] = null;
     }
 
+    /**
+     * Metoda cofajaca ruch zasymulowany
+     * @param move ruch do cofniecia
+     */
     public void undoMove(Move move) {
         Piece piece = board[move.endX][move.endY];
 
@@ -386,8 +516,13 @@ public class ChessBoard {
         board[move.endX][move.endY] = capturedPiece instanceof NullPiece ? null : capturedPiece;
     }
 
-
-    // sprawdzanie czy krol bylby w szachu gdyby sie gdzies poruszyl
+    /**
+     * Metoda sprawdzajaca czy krol bylby w szachu gdyby sie gdzies poruszyl
+     * @param isWhite kolor krola
+     * @param row pozycja x gdzie by sie poruszyl
+     * @param col pozycja y gdzie by sie poruszyl
+     * @return true - szach, false - brak szacha
+     */
     public boolean isInCheckAfterMove(boolean isWhite, int row, int col) {
         int kingX = -1;
         int kingY = -1;
@@ -424,12 +559,36 @@ public class ChessBoard {
         return !inCheck; // zwroci prawde jak krol bedzie w szachu a inaczej falsz
     }
 
+    /**
+     * Zmienna mowiaca czy ruch jest dobry
+     */
     protected boolean ok; // zmienna czy ruch jest git
+    /**
+     * Zmienna pomocnicza do enpassant dla bialych
+     */
     protected boolean enpassantWhite;
+    /**
+     * Zmienna pomocnicza do enpassant dla bialych
+     */
     protected boolean enpassantBlack;
+    /**
+     * Zmienna sledzaca czy pion awansowal
+     */
     protected boolean promoted = false;
+    /**
+     * Zmienna pomocnicza czy byl ruch piona
+     */
     private boolean wasPawnMove = false;
+    private static final String CAPTURE_SOUND = "capture.wav";
 
+    /**
+     * Metoda odpowiadajaca za ruch figur
+     * @param startX pozycja startowa x
+     * @param startY pozycja startowa y
+     * @param endX pozycja koncowa x
+     * @param endY pozycja koncowa y
+     * @param isAiTurn parametr odpowiadajacy za to czy jest ruch AI
+     */
     public void movePiece(int startX, int startY, int endX, int endY, boolean isAiTurn) {
         if(isCheckmate(true) || isCheckmate(false) || isStalemate(true) || isStalemate(false)) {
             return;
@@ -503,7 +662,7 @@ public class ChessBoard {
                     piece.setMoved();
                     // zbicie figury
                     if(destinationPiece != null) {
-                        SoundManager.playSound("capture.wav");
+                        SoundManager.playSound(CAPTURE_SOUND);
                     }
                     // piony mechaniki (prosze zabijcie tego co wymyslic en passant)
                     if(piece.pieceType == Piece.PieceType.PAWN) {
@@ -518,11 +677,11 @@ public class ChessBoard {
                             if(piece.isWhite) {
                                 board[endX - 1][endY] = null;
                                 enpassantWhite = true;
-                                if(board[startX+1][startY] == null) SoundManager.playSound("capture.wav");
+                                if(board[startX+1][startY] == null) SoundManager.playSound(CAPTURE_SOUND);
                             } else {
                                 board[endX + 1][endY] = null;
                                 enpassantBlack = true;
-                                if(board[startX-1][startY] == null) SoundManager.playSound("capture.wav");
+                                if(board[startX-1][startY] == null) SoundManager.playSound(CAPTURE_SOUND);
                             }
                         }
                         // promo piona na inne figury
@@ -547,7 +706,13 @@ public class ChessBoard {
             }
         }
     }
-
+    /**
+     * Funkcja sprawdzajaca pola po stronie króla (wspomaga roszade króla)
+     * @param isWhite kolor figury (true bialy, false czarny)
+     * @param y pozycja y na planszy
+     * @param piece figura dla której jest sprawdzane
+     * @return true jesli jest wolne, false jesli nie
+     */
     public boolean checkRowKingSide(boolean isWhite, int y, Piece piece) {
         int row = isWhite ? 0 : 7;
         if(piece.hasMoved) return false;
@@ -562,6 +727,13 @@ public class ChessBoard {
         return true;
     }
 
+    /**
+     * Funkcja sprawdzajaca pola po stronie królówki (wspomaga roszade króla)
+     * @param isWhite kolor figury (true bialy, false czarny)
+     * @param y pozycja y na planszy
+     * @param piece figura dla której jest sprawdzane
+     * @return true jesli jest wolne, false jesli nie
+     */
     public boolean checkRowQueenSide(boolean isWhite, int y, Piece piece) {
         int row = isWhite ? 0 : 7;
         if(piece.hasMoved) return false;
@@ -576,7 +748,9 @@ public class ChessBoard {
         return true;
     }
 
-    // resetowanie flagi do enpassant
+    /**
+     * Funkcja resetujaca flage piona który poruszył się dwa pola
+     */
     private void resetEnPassant() {
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
@@ -588,6 +762,13 @@ public class ChessBoard {
         }
     }
 
+    /**
+     * Funkcja sprawdzająca czy figura jest spinowana do króla
+     * @param piece figura którą się sprawdza
+     * @param x koordynat x gdzie znajduje sie figura
+     * @param y koordynat y gdzie znajduje sie figura
+     * @return true jesli jest przypinowana false w innym wypadku
+     */
     public boolean isPinned(Piece piece, int x, int y) {
         int kingX = -1;
         int kingY = -1;
@@ -639,6 +820,15 @@ public class ChessBoard {
         return isPinned;
     }
 
+    /**
+     * Metoda sprawdzajaca czy enpassant jest wymuszone
+     * @param startX pozycja startowa x piona
+     * @param startY pozycja startowa y piona
+     * @param endX pozycja koncowa x piona
+     * @param endY pozycja koncowa y piona
+     * @param isWhite kolor piona
+     * @return true - jest wymuszony, false - nie jest
+     */
     protected boolean isEnPassantForced(int startX, int startY, int endX, int endY, boolean isWhite) {
         Piece movingPawn = board[startX][startY];
         Piece targetPiece = board[endX][endY];
@@ -666,6 +856,14 @@ public class ChessBoard {
         return forced;
     }
 
+    /**
+     * Metoda sprawdzajaca czy po ruchu figury, krol zostalby odkrutu na atak figury innego koloru
+     * @param startX pozycja startowa x
+     * @param startY pozycja startowa y
+     * @param endX pozycja koncowa x
+     * @param endY pozycja koncowa y
+     * @return true - krol zostalby odkryty, false - nie zostalby
+     */
     public boolean wouldExposeKing(int startX, int startY, int endX, int endY) {
         Piece movingPiece = board[startX][startY];
         Piece targetPiece = board[endX][endY];
@@ -699,6 +897,12 @@ public class ChessBoard {
     }
 
     // do ai potrzebne rzeczy
+
+    /**
+     * Metoda zwracajaca wszystkie mozliwe ruchy danego koloru
+     * @param isWhite kolor do sprawdzenia
+     * @return lista wszystkich mozliwych ruchow danego koloru
+     */
     public List<Move> getAllLegalMoves(boolean isWhite) {
         List<Move> allLegalMoves = new ArrayList<>();
 
@@ -713,6 +917,10 @@ public class ChessBoard {
         return allLegalMoves;
     }
 
+    /**
+     * Metoda odpowiadajaca za ruch AI
+     * @param isWhite kolor ktorym sie porusza
+     */
     public void makeAIMove(boolean isWhite) {
         List<Move> legalMoves = getAllLegalMoves(isWhite);
 
@@ -756,6 +964,14 @@ public class ChessBoard {
         }
     }
 
+    /**
+     * Metoda wybierajaca najlepszy mozliwy ruch o podanej glebokosci
+     * @param depth glebokosc sprawdzania
+     * @param alpha najmniejsza wartosc
+     * @param beta najwieksza wartosc
+     * @param isMaximizing dla kogo jest obliczany ruch
+     * @return oszacowana wartosc
+     */
     public int minimax(int depth, int alpha, int beta, boolean isMaximizing) {
         if(depth == 0) {
             return evaluateBoard();
@@ -792,6 +1008,10 @@ public class ChessBoard {
         }
     }
 
+    /**
+     * Metoda pomocnicza ktora oszacowywuje wartosc szachownicy na podstawie wartosci figur oraz tego na jakim miejscu sie znajduja
+     * @return oszacowana wartosc szachownicy
+     */
     public int evaluateBoard() {
         int score = 0;
 
@@ -842,6 +1062,10 @@ public class ChessBoard {
         return score;
     }
 
+    /**
+     * Metoda sprawdzajaca czy jest koncowa faza gry
+     * @return true - jest, false - nie ma
+     */
     private boolean isEndGame()
     {
         Piece queen1 = null;
@@ -1018,10 +1242,15 @@ public class ChessBoard {
             -50,-40,-30,-30,-30,-30,-40,-50
     };
 
+    /**
+     * Metoda zwracajaca wartosc podanej figury
+     * @param piece figura dla ktorej sie sprawdza wartosc
+     * @return wartosc figury, dla bialych wartosc jest na +, dla czarnych na -
+     */
     private int pieceValue(Piece piece) {
         int value = 0;
         switch(piece.pieceType) {
-            case KING -> value=200000;
+            case KING -> value = 200000;
             case QUEEN -> value = 900;
             case ROOK -> value = 500;
             case BISHOP, KNIGHT -> value = 300;
@@ -1029,6 +1258,12 @@ public class ChessBoard {
         }
         return piece.isWhite ? value : -value; // biale + / czarne -
     }
+
+    /**
+     * Metoda zwracajaca najlepsza figure dla bota, ktory awansuje piona
+     * @param isWhite kolor jakim gra bot
+     * @return zwraca krolowke jako najlepsza figure do awansu
+     */
     private Piece getBestPromotionPiece(boolean isWhite) {
         return new Queen(isWhite);
     }

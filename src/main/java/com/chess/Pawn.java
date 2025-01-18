@@ -3,14 +3,33 @@ package com.chess;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Klasa piona
+ */
 public class Pawn extends Piece{
+    /**
+     * Konstruktor dla piona
+     * @param isWhite kolor piona
+     */
     public Pawn(boolean isWhite) {
         super(isWhite, PieceType.PAWN);
     }
 
+    /**
+     * Zmienna pomocnicza sprawdzajace czy pion poruszyl sie 2 pole do przodu
+     */
     protected boolean hasMovedTwoSquares = false;
+    /**
+     * Zmienna pomocnicza odpowiadajaca czy enpassnat jest aktywne
+     */
     protected boolean enPassant;
+    /**
+     * Zmienna pomomocnicza sprawdzajaca czy pion moze poruszyc sie do przodu
+     */
     protected boolean forward;
+    /**
+     * Zmienna pomocnicza sprawdzajaca czy enpassant jest wymuszone
+     */
     protected boolean forcedEnPssant;
 
     @Override

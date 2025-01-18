@@ -3,7 +3,14 @@ package com.chess;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Klasa skoczka
+ */
 public class Knight extends Piece{
+    /**
+     * Konstruktor dla skoczka
+     * @param isWhite kolor skoczka
+     */
     public Knight(boolean isWhite) {
         super(isWhite, PieceType.KNIGHT);
     }

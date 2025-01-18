@@ -3,13 +3,26 @@ package com.chess;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Klasa odpowiadajaca za pasek kto ma przewage
+ */
 public class EvaluationBar extends JPanel{
+    /**
+     * Oszacowana przewaga
+     */
     private double evaluation;
 
+    /**
+     * Konstruktor klasy ustawiajacy poczatkowa wartosc na 0.0 (remis)
+     */
     public EvaluationBar() {
         this.evaluation = 0.0;
     }
 
+    /**
+     * Metoda ustawiajaca wartosc oszacowania
+     * @param evaluation wartosc oszacowania
+     */
     public void setEvaluation(double evaluation) {
         this.evaluation = evaluation;
         repaint();
@@ -46,6 +59,10 @@ public class EvaluationBar extends JPanel{
         return new Dimension(30, getHeight());
     }
 
+    /**
+     * Metoda zwracajaca oszacowana wartosc
+     * @return oszacowana wartosc
+     */
     public double getEvaluation() {
         return evaluation;
     }

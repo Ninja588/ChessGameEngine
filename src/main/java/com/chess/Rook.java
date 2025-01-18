@@ -3,7 +3,14 @@ package com.chess;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Klasa dla figury wiezy
+ */
 public class Rook extends Piece {
+    /**
+     * Konsturktor dla wiezy
+     * @param isWhite kolor wiezy
+     */
     public Rook(boolean isWhite) {
         super(isWhite, PieceType.ROOK);
     }

@@ -7,15 +7,24 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Klasa odpowiadajca za GUI podczas gry
+ */
 public class ChessGameGUI implements ChessBoard.PromotionListener {
+    /**
+     * Tablica przyciskow odwzorowywujaca szachownica 8x8
+     */
     protected final JButton[][] boardSquares = new JButton[8][8];
     private JButton selectedSquare = null;
     private int selectedX = -1;
     private int selectedY = -1;
+    /**
+     * Zmienna szachownicy
+     */
     protected final ChessBoard chessBoard = new ChessBoard(this);
     private final Timer gameCheckTimer;
     private final Timer moveTimer;
-    protected boolean playerIsWhite;
+    private boolean playerIsWhite;
     private boolean aiEnabled;
 
     private JPanel mainPanel;
@@ -38,6 +47,15 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
     private static final String ARIAL = "Arial";
     private static final String GAME_END = "game-end.wav";
 
+    /**
+     * Konstruktor GUI
+     * @param aiEnabled odpowiada za to czy AI jest wlaczone
+     * @param mainPanel glowny panel GUI
+     * @param cardLayout glowny layout GUI
+     * @param lightSquaresColor kolor jasnych pol szachownicy
+     * @param darkSquaresColor kolor ciemnych pol szachownicy
+     * @param playerIsWhite odpowiada za to czy gracz gra bialymi
+     */
     public ChessGameGUI(boolean aiEnabled, JPanel mainPanel, CardLayout cardLayout, Color lightSquaresColor, Color darkSquaresColor, boolean playerIsWhite) {
         this.cardLayout = cardLayout;
         this.mainPanel = mainPanel;
@@ -102,6 +120,10 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         return button;
     }
 
+    /**
+     * Metoda tworzaca panel gry
+     * @return panel gry
+     */
     public JPanel getGamePanel() {
         JPanel gamePanel = new JPanel(new BorderLayout());
 
@@ -255,7 +277,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         cardLayout.show(mainPanel, "Main Menu");
     }
 
-    protected void showLegalMoves() {
+    private void showLegalMoves() {
         if(selectedX!=-1 && selectedY!=-1) {
             Piece selectedPiece = chessBoard.getPiece(selectedX, selectedY);
             String tempName;
@@ -360,6 +382,15 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         }
     }
 
+    /**
+     * Metoda aktualizujaca szachownice
+     * @param x koordynat startowy x
+     * @param y koordynat startowy y
+     * @param endX koordynat koncowy x
+     * @param endY koordynat koncowy y
+     * @param name nazwa figury
+     * @param isWhite kolor figury
+     */
     public void updateBoard(int x, int y, int endX, int endY, String name, boolean isWhite) {
         boardSquares[x][y].setIcon(null);
         boardSquares[endX][endY].setIcon(new ImageIcon(PATH + (isWhite ? WHITE : BLACK) + name + ".png"));
@@ -367,6 +398,12 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         boardPanel.repaint();
     }
 
+    /**
+     * Aktualizuje szachownice tak aby krol i wieza znalazly sie na dobrych polach po roszadzie
+     * @param kingMove ruch krola
+     * @param rookMove ruch wiezy
+     * @param isWhite kolor figur
+     */
     public void updateCastlingUI(Move kingMove, Move rookMove, boolean isWhite) {
         boardSquares[kingMove.endX][kingMove.endY].setIcon(new ImageIcon(PATH + (isWhite ? WHITE : BLACK) + "King.png"));
         boardSquares[rookMove.endX][rookMove.endY].setIcon(new ImageIcon(PATH + (isWhite ? WHITE : BLACK) + "Rook.png"));
@@ -377,7 +414,7 @@ public class ChessGameGUI implements ChessBoard.PromotionListener {
         boardPanel.repaint();
     }
 
-    public void flipBoard() {
+    private void flipBoard() {
         boardPanel.removeAll();
 
         if(playerIsWhite) {
